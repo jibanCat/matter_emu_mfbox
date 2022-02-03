@@ -10,6 +10,7 @@ np.random.seed(0)
 
 matplotlib.use("pdf")
 
+n_save = 1
 
 def generate_data(
         folder_1: str = "data/50_LR_3_HR_box_512_combined_128res",
@@ -60,23 +61,15 @@ def do_validations(
     # get training and testing data. Normalization included.
     data_1, data_2 = generate_data(folder_1=folder_1, folder_2=folder_2)
 
-    import pdb
-    pdb.set_trace()
 
     # change path for saving figures
     os.chdir(output_folder)
     print(">> ", os.getcwd())
 
-    # Multi-fidelity
-    # linear multi-fidelity
-    dgmgp = SingleBindGMGP(
-
-    )
-
     # Data (M1, M2, H)
     dgmgp = SingleBindGMGP(
-        [data_1.X_train_norm[0], data_2.X_train_norm[0], data_1.X_train_norm[1]],
-        [data_1.Y_train_norm[0], data_2.Y_train_norm[0], data_1.Y_train_norm[1]],
+        X_train=[data_1.X_train_norm[0], data_2.X_train_norm[0], data_1.X_train_norm[1]],
+        Y_train=[data_1.Y_train_norm[0][:, ::n_save], data_2.Y_train_norm[0][:, ::n_save], data_1.Y_train_norm[1][:, ::n_save]],
         n_fidelities=n_fidelities,
         n_samples=500,
         optimization_restarts=n_optimization_restarts,
@@ -85,9 +78,9 @@ def do_validations(
 
     # Single-fidelity
     # high-fidelity only emulator
-    hf_only = SingleBinGP(data_1.X_train_norm[-1], data_1.Y_train[-1])
-    lf_only_1 = SingleBinGP(data_1.X_train_norm[0], data_1.Y_train[0])
-    lf_only_2 = SingleBinGP(data_2.X_train_norm[0], data_2.Y_train[0])
+    hf_only = SingleBinGP(data_1.X_train_norm[-1], data_1.Y_train[-1][:, ::n_save])
+    lf_only_1 = SingleBinGP(data_1.X_train_norm[0], data_1.Y_train[0][:, ::n_save])
+    lf_only_2 = SingleBinGP(data_2.X_train_norm[0], data_2.Y_train[0][:, ::n_save])
 
     # optimize each model
     hf_only.optimize_restarts(n_optimization_restarts=n_optimization_restarts)
@@ -95,6 +88,9 @@ def do_validations(
     lf_only_2.optimize_restarts(n_optimization_restarts=n_optimization_restarts)
 
     # testing set
+    # import pdb
+    # pdb.set_trace()
+
     means_dgmgp, vars_dgmgp, pred_exacts_dgmgp = validate_mf(data_1, model=dgmgp)
     means_hfonly, vars_hfonly, pred_exacts_hfonly = validate_sf(data_1, model=hf_only)
     means_lfonly_1, vars_lfonly_1, pred_exacts_lfonly_1 = validate_sf(data_1, model=lf_only_1)
@@ -172,3 +168,114 @@ def do_validations(
 
     # back to root folder
     os.chdir(old_dir)
+
+def validate_mf(data: PowerSpecs, model: SingleBinNonLinearGP, fidelity: int = 1):
+    """
+    Validate the trained MFEmulators
+    """
+    x_test, y_test = data.X_test_norm[0], data.Y_test[0][:, ::n_save]
+
+    mean, var = model.predict(x_test)
+
+    # predicted/exact
+    pred_exacts = 10 ** mean / 10 ** y_test
+
+    # import pdb
+    # pdb.set_trace()
+
+    return mean, var, pred_exacts
+
+
+def validate_sf(data: PowerSpecs, model: SingleBinGP):
+    """
+    Validate the trained single-fidelity emulator
+    """
+    all_means = []
+    all_vars = []
+    all_pred_exacts = []
+    for n_validations, (x_test, y_test) in enumerate(
+        zip(data.X_test_norm[0], data.Y_test[0][:, ::n_save])
+    ):
+        mean, var = model.predict(x_test[None, :])
+
+        all_means.append(10 ** mean[0])
+        all_vars.append(10 ** var[0])
+
+        # predicted/exact
+        all_pred_exacts.append(10 ** mean[0] / 10 ** y_test)
+
+    return all_means, all_vars, all_pred_exacts
+
+def do_emulator_error_plots(
+    data: PowerSpecs,
+    means_mf: List[np.ndarray],
+    means_sf: List[np.ndarray],
+    pred_exacts_mf: List[np.ndarray],
+    pred_exacts_sf: List[np.ndarray],
+    label_mf: str = "NARGP",
+    label_sf: str = "HF only",
+    figure_name: str = "",
+):
+    """
+    1. predicted / exact power spectrum
+    2. absolute error plot
+    """
+
+    # mean emulation error
+    emulator_errors = np.abs(np.array(pred_exacts_mf) - 1)
+    plt.loglog(
+        10 ** data.kf[::n_save], np.mean(emulator_errors, axis=0), label=label_mf, color="C0"
+    )
+    plt.fill_between(
+        10 ** data.kf[::n_save],
+        y1=np.min(emulator_errors, axis=0),
+        y2=np.max(emulator_errors, axis=0),
+        color="C0",
+        alpha=0.3,
+    )
+
+    emulator_errors = np.abs(np.array(pred_exacts_sf) - 1)
+    plt.loglog(
+        10 ** data.kf[::n_save], np.mean(emulator_errors, axis=0), label=label_sf, color="C1"
+    )
+    plt.fill_between(
+        10 ** data.kf[::n_save],
+        y1=np.min(emulator_errors, axis=0),
+        y2=np.max(emulator_errors, axis=0),
+        color="C1",
+        alpha=0.3,
+    )
+    plt.legend()
+    plt.ylabel(r"$| P_\mathrm{predicted}(k) / P_\mathrm{true}(k) - 1|$")
+    plt.xlabel(r"$k (h/\mathrm{Mpc})$")
+    save_figure("absolute_errors_" + figure_name)
+    plt.close()
+    plt.clf()
+
+
+def do_pred_exact(
+    data: PowerSpecs,
+    means_mf: List[np.ndarray],
+    pred_exacts_mf: List[np.ndarray],
+    label_mf: str = "NARGP",
+    figure_name: str = "",
+):
+    """
+    Pred/Exact plot
+    """
+    for i, pred_exact_mf in enumerate(pred_exacts_mf):
+        if i == 0:
+            plt.semilogx(
+                10 ** data.kf[::n_save], pred_exact_mf, label=label_mf, color="C{}".format(i)
+            )
+        else:
+            plt.semilogx(10 ** data.kf[::n_save], pred_exact_mf, color="C{}".format(i))
+
+    plt.legend()
+    plt.ylim(0.96, 1.06)
+    plt.xlabel(r"$k (h/\mathrm{Mpc})$")
+    plt.ylabel(r"$\mathrm{Predicted/Exact}$")
+    save_figure("predict_exact_" + figure_name)
+    plt.close()
+    plt.clf()
+
