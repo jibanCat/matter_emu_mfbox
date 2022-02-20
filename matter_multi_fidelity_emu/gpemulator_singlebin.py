@@ -269,6 +269,160 @@ class SingleBinLinearGP:
         return param_dict
 
 
+class SingleBindGMGP:
+    """
+    (L1, L2, H)
+    """
+    def __init__(
+        self,
+        X_train: List[np.ndarray],
+        Y_train: List[np.ndarray],
+        n_fidelities: int,
+        n_samples: int = 500,
+        optimization_restarts: int = 30,
+        # turn_off_bias: bool = False,
+        ARD_last_fidelity: bool = False,
+    ) -> None:
+
+        self.n_samples = n_samples
+        self.optimization_restarts = optimization_restarts
+
+        # a list of GP emulators
+        models: List = []
+
+        D1 = X_train[0]
+        D2 = X_train[1]
+        D3 = X_train[2]
+
+        z1 = Y_train[0]
+        z2 = Y_train[1]
+        z3 = Y_train[2]
+
+        # loop through k bins
+        for i in range(z3.shape[1]):
+            this_z1 = z1[:, [i]]
+            this_z2 = z2[:, [i]]
+            this_z3 = z3[:, [i]]
+
+            dim = D3.shape[1]
+            Nts = D3.shape[0]
+
+            active_dimensions = np.arange(0,dim)
+
+            ''' M1 : Train LF model 1 '''
+            k1 = GPy.kern.RBF(dim, ARD = True)
+            m1 = GPy.models.GPRegression(X=D1, Y=this_z1, kernel=k1)
+
+            m1[".*Gaussian_noise"] = m1.Y.var()*0.01
+            m1[".*Gaussian_noise"].fix()
+            m1.optimize(max_iters = 500)
+            m1[".*Gaussian_noise"].unfix()
+            m1[".*Gaussian_noise"].constrain_positive()
+            m1.optimize_restarts(optimization_restarts, optimizer = "bfgs",  max_iters = 100)
+
+            mu1, v1 = m1.predict(D3)
+
+            ''' M2 : Train LF model 2 '''
+            k2 = GPy.kern.RBF(dim, ARD = True)
+            m2 = GPy.models.GPRegression(X=D2, Y=this_z2, kernel=k2)
+
+            m2[".*Gaussian_noise"] = m2.Y.var()*0.01
+            m2[".*Gaussian_noise"].fix()
+            m2.optimize(max_iters = 500)
+            m2[".*Gaussian_noise"].unfix()
+            m2[".*Gaussian_noise"].constrain_positive()
+            m2.optimize_restarts(optimization_restarts, optimizer = "bfgs",  max_iters = 100)
+
+            mu2, v2 = m2.predict(D3)
+
+            ''' M3 : Train HF model 3 '''
+            XX = np.hstack((D3, mu1, mu2))
+
+
+            def train_m3(tries: int = 0):
+
+                while True:
+                    try:
+                        k3 = (
+                                GPy.kern.Linear(2,active_dims=[dim,dim+1])+
+                                GPy.kern.RBF(1, active_dims = [dim])*
+                                GPy.kern.RBF(1, active_dims = [dim+1])
+                            )*  GPy.kern.RBF(dim, active_dims = active_dimensions, ARD = ARD_last_fidelity) \
+                            +   GPy.kern.RBF(dim, active_dims = active_dimensions, ARD = ARD_last_fidelity)
+
+                        m3 = GPy.models.GPRegression(X=XX, Y=this_z3, kernel=k3)
+
+                        m3[".*Gaussian_noise"] = m3.Y.var()*0.01
+                        m3[".*Gaussian_noise"].fix()
+                        m3.optimize(max_iters = 500)
+                        m3[".*Gaussian_noise"].unfix()
+                        m3[".*Gaussian_noise"].constrain_positive()
+                        m3.optimize_restarts(optimization_restarts, optimizer = "bfgs",  max_iters = 100)
+                        
+                        return m3
+
+                    except np.linalg.LinAlgError as e:
+                        if tries <= 10:
+
+                            print(e, "re-try")
+                            return train_m3(tries + 1)
+                        else:
+                            print("Hit the limit!")
+
+            m3 = train_m3(0)
+
+            models.append([m1, m2, m3])
+
+            self.models = models
+
+    def predict(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Predicts mean and variance for fidelity specified by last column of X.
+        Note that we predict from gp from each k bin.
+
+        :param X: point(s) at which to predict
+        :return: predicted P(all k bins) (mean, variance) at X
+        """
+        means = np.full((X.shape[0], len(self.models)), fill_value=np.nan)
+        variances = np.full((X.shape[0], len(self.models)), fill_value=np.nan)
+
+        for i,model in enumerate(self.models):
+            m1, m2, m3 = model
+
+            ''' Compute posterior mean and variance for level 3 evaluated at the test points '''
+            nsamples = self.n_samples
+            ntest = X.shape[0]
+
+            # sample M1 at Xtest
+            mu0, C0 = m1.predict(X, full_cov=True)
+            Z1 = np.random.multivariate_normal(mu0.flatten(),C0,nsamples)
+
+            # sample M2 at Xtest
+            mu0, C0 = m2.predict(X, full_cov=True)
+            Z2 = np.random.multivariate_normal(mu0.flatten(),C0,nsamples)
+
+            # push samples through M3
+            tmp_m = np.zeros((nsamples,ntest))
+            tmp_v = np.zeros((nsamples,ntest))
+            for j in range(0,nsamples):
+                mu, v = m3.predict(np.hstack((X, Z1[j,:][:,None], Z2[j,:][:,None])))
+                tmp_m[j,:] = mu.flatten()
+                tmp_v[j,:] = v.flatten()
+
+            # get M3 posterior mean and variance at Xtest
+            mu_final = np.mean(tmp_m, axis = 0)
+            v_final = np.mean(tmp_v, axis = 0) + np.var(tmp_m, axis = 0)
+            y_pred = mu_final[:,None]
+            var_pred = np.abs(v_final[:,None])
+
+            # import pdb
+            # pdb.set_trace()
+
+            means[:, i] = y_pred[:, 0]
+            variances[:, i] = var_pred[:, 0]
+
+        return means, variances
+
 class SingleBinNonLinearGP:
     """
     A thin wrapper around NonLinearMultiFidelityModel. It models each k input as
