@@ -271,7 +271,25 @@ class SingleBinLinearGP:
 
 class SingleBindGMGP:
     """
-    (L1, L2, H)
+    Deep graphical Gaussian process for multi-fidelity, the core part of the code
+    is provided by Dr Simon Mak and Irene Ji.
+
+    Ref: A graphical multi-fidelity Gaussian process model, with application to
+         emulation of expensive computer simulations
+    https://arxiv.org/abs/2108.00306  
+
+    NOTE: Current version only support two low-fidelity nodes.
+    TODO: Customize the code to run for multiple low-fidelity nodes.
+
+    Parameters:
+    ----
+    :param X_train: a List of training input parameters. Assume 2 fidelity. The final
+        element is high-fidelity. (low-fidelity node 1, low-fidelity node 2, high-fidelity node).
+    :param Y_train: a List of training input parameters. In the same order as the X_train.
+    :param n_samples: Number of samples to use to do quasi-Monte-Carlo integration at each fidelity.
+    :param optimization_restarts: number of optimization restarts you want in GPy.
+    :param ARD_last_fidelity: whether to apply ARD for the last (highest) fidelity.
+        Default, False.
     """
     def __init__(
         self,
@@ -338,7 +356,8 @@ class SingleBindGMGP:
             ''' M3 : Train HF model 3 '''
             XX = np.hstack((D3, mu1, mu2))
 
-
+            # [jibancat] This part has re-written by me since for many cases the optimization
+            #            failed and the loop stuck.
             def train_m3(tries: int = 0):
 
                 while True:
@@ -415,13 +434,31 @@ class SingleBindGMGP:
             y_pred = mu_final[:,None]
             var_pred = np.abs(v_final[:,None])
 
-            # import pdb
-            # pdb.set_trace()
-
             means[:, i] = y_pred[:, 0]
             variances[:, i] = var_pred[:, 0]
 
         return means, variances
+
+    def to_dict(self) -> Dict:
+        """
+        Save hyperparameters into a dict.
+        """
+        param_dict = {}
+
+        for i,model in enumerate(self.models):
+            this_param_dict = {}
+
+            # append low-fidelity nodes
+            for j, m in enumerate(model[:-1]):
+                this_param_dict["low_fidelity_{}".format(j)] = m.kern.to_dict()
+            # append high-fidelity node
+            m = model[-1]
+            this_param_dict["high_fidelity"] = m.kern.to_dict()
+
+            param_dict["bin_{}".format(i)] = this_param_dict
+
+        return param_dict
+
 
 class SingleBinNonLinearGP:
     """
