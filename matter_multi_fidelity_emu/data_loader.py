@@ -135,7 +135,7 @@ def convert_h5_to_txt(
     # input parameters
     x_train_hf = f_hf["params"][()]
 
-    powerspec_hf = powerspec_hf[ind_hf_sims, :, :]
+    powerspecs_hf = powerspecs_hf[ind_hf_sims, :, :]
     x_train_hf   = x_train_hf[x_train_hf, :, :]
     print("-> Shape of powerspecs", f_hf["powerspecs"].shape)
     print("-> Selected indices:", f_hf["selected_ind"][()])
