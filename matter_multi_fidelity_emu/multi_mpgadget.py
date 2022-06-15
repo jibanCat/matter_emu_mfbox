@@ -191,6 +191,8 @@ class MultiMPGadgetPowerSpec(MultiPowerSpec):
         # assign attrs for loading MPGadget power specs
         self.scale_factors = scale_factors
 
+        self.selected_ind = selected_ind
+
     def create_hdf5(self, hdf5_name: str = "MultiMPGadgetPowerSpec.hdf5") -> None:
 
         """
@@ -206,6 +208,10 @@ class MultiMPGadgetPowerSpec(MultiPowerSpec):
         """
         # open a hdf5 file to store simulations
         with h5py.File(hdf5_name, "w") as f:
+            # Save the selected ind for comparing with LF
+            if self.selected_ind is not None:
+                f.create_dataset("selected_ind", data=np.array(self.selected_ind))
+
             # store the sampling from Latin Hyper cube dict into datasets:
             # since the sampling size should be arbitrary, we should use
             # datasets instead of attrs to stores these sampling arrays
