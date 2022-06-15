@@ -81,7 +81,7 @@ def example_h5(
 
     # Also get npart and boxsize
     # Note: here do a double-check
-    ps = next(mmpgps.load_PowerSpecs(all_submission_dirs))
+    ps = next(mmpgps.load_PowerSpecs(all_submission_dirs, 1.0000))
     _npart = ps.param_dict["npart"]
     _box = ps.param_dict["box"]
     assert npart == _npart
