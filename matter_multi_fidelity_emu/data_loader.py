@@ -138,19 +138,19 @@ def convert_h5_to_txt(
 
     powerspecs_hf = powerspecs_hf[ind_hf_sims, :, :]
     x_train_hf   = x_train_hf[ind_hf_sims, :]
-    print("-> Shape of powerspecs", f_hf["powerspecs"].shape)
-    print("-> Selected indices:", f_hf["selected_ind"][()])
+    print("-> Shape of powerspecs", powerspecs_hf.shape)
+    print("-> Selected indices:", selected_ind[ind_hf_sims][()])
 
     kfmpc_hf = f_hf["kfmpc"][()]
     assert np.all(np.abs(kfmpc_hf - f_test["kfmpc"][()]) < 1e-10)
 
     # some checking
     last_powerspec = get_powerspec_at_z(len(zout) - 1, powerspecs_hf)
-    assert len(last_powerspec) == f_hf["params"].shape[0]
+    assert len(last_powerspec) == f_hf["params"][()][ind_hf_sims, :].shape[0]
     assert last_powerspec.shape[1] == len(kfmpc_hf)
 
     first_powerspec = get_powerspec_at_z(0, powerspecs_hf)
-    assert len(first_powerspec) == f_hf["params"].shape[0]
+    assert len(first_powerspec) == f_hf["params"][()][ind_hf_sims, :].shape[0]
     assert first_powerspec.shape[1] == len(kfmpc_hf)
 
     # test files: same resolution as high-fidelity
