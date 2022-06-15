@@ -120,7 +120,7 @@ def convert_h5_to_txt(
             hf_selected_ind,
         )
         print("Check: selected inds are,", selected_ind[ind_hf_sims])
-        assert selected_ind[ind_hf_sims] == hf_selected_ind
+        assert np.all(selected_ind[ind_hf_sims] == hf_selected_ind)
     else:
         ind_hf_sims = np.isin(
             selected_ind,
