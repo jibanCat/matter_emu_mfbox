@@ -113,6 +113,7 @@ def convert_h5_to_txt(
     print("Selected indices:", f_hf["selected_ind"][()])
     print("\n")
 
+    # We only need to save a subset we want to have in the HF training
     selected_ind = f_hf["selected_ind"][()]
     if hf_selected_ind is not None:
         ind_hf_sims = np.isin(
@@ -136,7 +137,7 @@ def convert_h5_to_txt(
     x_train_hf = f_hf["params"][()]
 
     powerspecs_hf = powerspecs_hf[ind_hf_sims, :, :]
-    x_train_hf   = x_train_hf[x_train_hf, :, :]
+    x_train_hf   = x_train_hf[ind_hf_sims, :, :]
     print("-> Shape of powerspecs", f_hf["powerspecs"].shape)
     print("-> Selected indices:", f_hf["selected_ind"][()])
 
