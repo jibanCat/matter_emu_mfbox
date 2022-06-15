@@ -14,6 +14,36 @@ matplotlib.use("pdf")
 
 n_save = 10
 
+def folder_name(
+    num1: int,
+    res1: int,
+    box1: int,
+
+    num2: int,
+    res2: int,
+    box2: int,
+
+    num3: int,
+    res3: int,
+    box3: int,
+    z: float,
+    selected_ind,
+):
+    return "dGMGP_{}_L1-res{}box{}_{}_L2-res{}box{}_{}_H-res{}box{}_z{}_ind-{}".format(
+        num1,
+        res1,
+        box1,
+        num2,
+        res2,
+        box2,
+        num3,
+        res3,
+        box3,
+        "{:.2g}".format(z).replace(".", "_"),
+        "-".join(map(str, selected_ind)),
+    )
+
+
 def generate_data(
         folder_1: str = "data/50_LR_3_HR_box_512_combined_128res",
         folder_2: str = "data/50_LR_box_300_3_HR_box_512_combined_128res",
@@ -71,7 +101,7 @@ def do_validations(
 
     # interpolate: interp(log10_k, Y_lf)(log10_k[ind_min])
     Y_lf_norm_2 = interpolate(data_2.kf, data_2.Y_train_norm[0], data_1.kf[ind_min])
-
+    Y_lf_2 = interpolate(data_2.kf, data_2.Y_train[0], data_1.kf[ind_min])
     assert Y_lf_norm_2.shape[1] == data_1.kf[ind_min].shape[0]
 
 
@@ -93,7 +123,7 @@ def do_validations(
     # high-fidelity only emulator
     hf_only = SingleBinGP(data_1.X_train_norm[-1], data_1.Y_train[-1][:, ::n_save])
     lf_only_1 = SingleBinGP(data_1.X_train_norm[0], data_1.Y_train[0][:, ::n_save])
-    lf_only_2 = SingleBinGP(data_2.X_train_norm[0], Y_lf_norm_2[:, ::n_save])
+    lf_only_2 = SingleBinGP(data_2.X_train_norm[0], Y_lf_2[:, ::n_save])
 
     # optimize each model
     hf_only.optimize_restarts(n_optimization_restarts=n_optimization_restarts)
