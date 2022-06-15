@@ -232,7 +232,7 @@ class MultiMPGadgetPowerSpec(MultiPowerSpec):
 
             # Get the shape first
             # TODO: might be a better way append arrays
-            ps_test = MPGadgetPowerSpec(submission_dir, scale_factor) # Note: there are default rebinning parameters
+            ps_test = MPGadgetPowerSpec(self.all_submission_dirs[0], scale_factor) # Note: there are default rebinning parameters
             
             kk      = ps_test.k0                                      # Note: assumption is all k bins are the same
             ps_size = ps_test.powerspecs.shape[0]
