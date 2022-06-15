@@ -12,20 +12,41 @@ from .gpemulator_singlebin import _map_params_to_unit_cube as input_normalize
 from .data_loader_dgmgp import interpolate
 
 # put the folder name on top, easier to find and modify
-def folder_name(num1: int, res1: int, box1: int, num2: int, res2:int, box2: int, z: float, selected_ind):
+def folder_name(
+    num1: int,
+    res1: int,
+    box1: int,
+    num2: int,
+    res2: int,
+    box2: int,
+    z: float,
+    selected_ind,
+):
     return "Matterpower_{}_res{}box{}_{}_res{}box{}_z{}_ind-{}".format(
-        num1, res1, box1, num2, res2, box2, "{:.2g}".format(z).replace(".", "_"), "-".join(map(str, selected_ind))
+        num1,
+        res1,
+        box1,
+        num2,
+        res2,
+        box2,
+        "{:.2g}".format(z).replace(".", "_"),
+        "-".join(map(str, selected_ind)),
     )
 
+
 def convert_h5_to_txt(
-        lf_filename: str = "data/dmo_60_res128box256/cc_emulator_powerspecs.hdf5",
-        hf_filename: str = "data/dmo_24_res512box256/cc_emulator_powerspecs.hdf5",
-        test_filename: str = "data/dmo_10_res512box256/cc_emulator_powerspecs.hdf5",
-        lf_json: str = "data/dmo_60_res128box256/emulator_params.json",
-        hf_json: str = "data/dmo_24_res512box256/emulator_params.json",
-        test_json: str = "data/dmo_10_res512box256/emulator_params.json",
-        hf_selected_ind: Optional[List[int]] = [0, 1, 2], ## these should be the index in the "LF" LHD
-    ):
+    lf_filename: str = "data/dmo_60_res128box256/cc_emulator_powerspecs.hdf5",
+    hf_filename: str = "data/dmo_24_res512box256/cc_emulator_powerspecs.hdf5",
+    test_filename: str = "data/dmo_10_res512box256/cc_emulator_powerspecs.hdf5",
+    lf_json: str = "data/dmo_60_res128box256/emulator_params.json",
+    hf_json: str = "data/dmo_24_res512box256/emulator_params.json",
+    test_json: str = "data/dmo_10_res512box256/emulator_params.json",
+    hf_selected_ind: Optional[List[int]] = [
+        0,
+        1,
+        2,
+    ],  ## these should be the index in the "LF" LHD
+):
     """
     Convert the h5 files Martin gave me to txt files to be read by the dataloader.
 
@@ -57,7 +78,7 @@ def convert_h5_to_txt(
     assert np.all(param_limits == np.array(param_test["bounds"]))
 
     # make sure all keys are in the file
-    keys = ['powerspecs', 'kfmpc', 'params', 'zout']
+    keys = ["powerspecs", "kfmpc", "params", "zout"]
     for key in keys:
         assert key in f_lf.keys()
         assert key in f_hf.keys()
@@ -79,7 +100,7 @@ def convert_h5_to_txt(
     # assert np.all(np.abs(kfmpc - f_hf["kfmpc"][()]) < 1e-10)
 
     zout = f_lf["zout"][()]
-    assert np.all( (zout - f_hf["zout"][()]) < 1e-10 )
+    assert np.all((zout - f_hf["zout"][()]) < 1e-10)
 
     # power spectra, all redshifts
     powerspecs_lf = f_lf["powerspecs"][()]
@@ -101,7 +122,6 @@ def convert_h5_to_txt(
     assert len(first_powerspec) == f_lf["params"].shape[0]
     assert first_powerspec.shape[1] == len(kfmpc_lf)
 
-
     print("High-fidelity file:")
     print("----")
     print("Resolution:", param_hf["npart"])
@@ -116,17 +136,11 @@ def convert_h5_to_txt(
     # We only need to save a subset we want to have in the HF training
     selected_ind = f_hf["selected_ind"][()]
     if hf_selected_ind is not None:
-        ind_hf_sims = np.isin(
-            selected_ind,
-            hf_selected_ind,
-        )
+        ind_hf_sims = np.isin(selected_ind, hf_selected_ind,)
         print("Check: selected inds are,", selected_ind[ind_hf_sims])
         assert np.all(selected_ind[ind_hf_sims] == hf_selected_ind)
     else:
-        ind_hf_sims = np.isin(
-            selected_ind,
-            np.arange(len(selected_ind)),
-        )
+        ind_hf_sims = np.isin(selected_ind, np.arange(len(selected_ind)),)
         print("Check: selected inds are,", selected_ind[ind_hf_sims])
         assert selected_ind[ind_hf_sims] == hf_selected_ind
 
@@ -137,7 +151,7 @@ def convert_h5_to_txt(
     x_train_hf = f_hf["params"][()]
 
     powerspecs_hf = powerspecs_hf[ind_hf_sims, :, :]
-    x_train_hf   = x_train_hf[ind_hf_sims, :]
+    x_train_hf = x_train_hf[ind_hf_sims, :]
     print("-> Shape of powerspecs", powerspecs_hf.shape)
     print("-> Selected indices:", selected_ind[ind_hf_sims][()])
 
@@ -180,7 +194,7 @@ def convert_h5_to_txt(
     assert first_powerspec.shape[1] == len(kfmpc_hf)
 
     # output training files, one redshift per folder
-    for i,z in enumerate(zout):
+    for i, z in enumerate(zout):
         print("Preparing training files in {:.3g}".format(z))
 
         powerspec_lf = get_powerspec_at_z(i, powerspecs_lf)
@@ -198,27 +212,25 @@ def convert_h5_to_txt(
             selected_ind=hf_selected_ind,
         )
 
-        this_outdir = os.path.join(
-                "data",
-                "processed",
-                outdir,
-        )
+        this_outdir = os.path.join("data", "processed", outdir,)
         os.makedirs(
-            this_outdir,
-            exist_ok=True,
+            this_outdir, exist_ok=True,
         )
 
-        # Interpolate the LF, 
+        # Interpolate the LF,
         # and limit the HF kmax to the maximum of LF
         # Min k bins LF <= k bins HF <= Max k bins LF
-        ind_min = (np.log10(kfmpc_lf).min() <= np.log10(kfmpc_hf)) & (np.log10(kfmpc_hf) <= np.log10(kfmpc_lf).max())
+        ind_min = (np.log10(kfmpc_lf).min() <= np.log10(kfmpc_hf)) & (
+            np.log10(kfmpc_hf) <= np.log10(kfmpc_lf).max()
+        )
 
         # interpolate: interp(log10_k, Y_lf)(log10_k[ind_min])
-        powerspec_lf_new = interpolate(np.log10(kfmpc_lf), powerspec_lf, np.log10(kfmpc_hf)[ind_min])
+        powerspec_lf_new = interpolate(
+            np.log10(kfmpc_lf), powerspec_lf, np.log10(kfmpc_hf)[ind_min]
+        )
         powerspec_hf_new = powerspec_hf[:, ind_min]
         powerspec_test_new = powerspec_test[:, ind_min]
         kfmpc_new = kfmpc_hf[ind_min]
-
 
         # new k bins: same k bin over different fidelities
         print("New k bins:")
@@ -229,10 +241,13 @@ def convert_h5_to_txt(
         print("Shape of Test powerspecs", powerspec_test_new.shape)
         print("\n")
 
-
         # only power spec needs a loop
-        np.savetxt(os.path.join(this_outdir, "train_output_fidelity_0.txt"), powerspec_lf_new)
-        np.savetxt(os.path.join(this_outdir, "train_output_fidelity_1.txt"), powerspec_hf_new)
+        np.savetxt(
+            os.path.join(this_outdir, "train_output_fidelity_0.txt"), powerspec_lf_new
+        )
+        np.savetxt(
+            os.path.join(this_outdir, "train_output_fidelity_1.txt"), powerspec_hf_new
+        )
         np.savetxt(os.path.join(this_outdir, "test_output.txt"), powerspec_test_new)
 
         np.savetxt(os.path.join(this_outdir, "train_input_fidelity_0.txt"), x_train_lf)

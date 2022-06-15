@@ -17,7 +17,10 @@ from .rebin_powerspectrum import modecount_rebin
 
 powerspec_fn = lambda scale_factor: "powerspectrum-{:.4f}.txt".format(scale_factor)
 
-def load_total_mass(submission_dir: str, scale_factor: int, minmodes: int = 200, ndesired: int = 200) -> Tuple[np.ndarray, np.ndarray]:
+
+def load_total_mass(
+    submission_dir: str, scale_factor: int, minmodes: int = 200, ndesired: int = 200
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Load the total mass power spectrum from MP-Gadget powerspectrum files
 
@@ -40,7 +43,7 @@ def load_total_mass(submission_dir: str, scale_factor: int, minmodes: int = 200,
 
     # store all available scale factors
     powerspec_files = glob(
-            os.path.join(submission_dir, "output", "powerspectrum-*.txt")
+        os.path.join(submission_dir, "output", "powerspectrum-*.txt")
     )
     # store the length first
     length = len(powerspec_files)
@@ -57,7 +60,11 @@ def load_total_mass(submission_dir: str, scale_factor: int, minmodes: int = 200,
     # make sure the input scale factor is available
     diff = np.abs(np.array(scale_factors) - scale_factor)
     if min(diff) > 0.0001:
-        raise Exception("input scale factor {} is not in the MP-Gadget output files.".format(scale_factor))
+        raise Exception(
+            "input scale factor {} is not in the MP-Gadget output files.".format(
+                scale_factor
+            )
+        )
     filename = "powerspectrum-{:.4f}.txt".format(scale_factors[np.argmin(diff)])
     print("[Info] Loading powerspetrum file ...", filename)
 
@@ -70,6 +77,7 @@ def load_total_mass(submission_dir: str, scale_factor: int, minmodes: int = 200,
     kk, pk, modes = modecount_rebin(kk, pk, modes, minmodes=minmodes, ndesired=ndesired)
 
     return kk, pk, modes
+
 
 def get_number(regex: str, filename: str) -> float:
     """
@@ -84,6 +92,7 @@ def get_number(regex: str, filename: str) -> float:
 
     return float(out[0])
 
+
 class MPGadgetPowerSpec(PowerSpec):
 
     """
@@ -94,27 +103,28 @@ class MPGadgetPowerSpec(PowerSpec):
     Note: the training set will be directly outputed from MultiMPGadgetPowerSpec
     """
 
-    def __init__(self,
-        submission_dir: str = "test/", scale_factor : float = 1.0,
+    def __init__(
+        self, submission_dir: str = "test/", scale_factor: float = 1.0,
     ) -> None:
         super(PowerSpec, self).__init__(submission_dir)
 
         # read into arrays
         # Matter power specs from simulations
-        kk, pk, modes = self.read_powerspec(submission_dir=submission_dir, scale_factor=scale_factor)
+        kk, pk, modes = self.read_powerspec(
+            submission_dir=submission_dir, scale_factor=scale_factor
+        )
 
         self._scale_factor = scale_factor
 
         self._k0 = kk
         self._powerspecs = pk
-        self._modes = modes # TODO: implement uncertainty
+        self._modes = modes  # TODO: implement uncertainty
 
         # Matter power specs from CAMB linear theory code
         redshifts, out = self.read_camblinear(self.camb_files)
 
         self._camb_redshifts = redshifts
         self._camb_matters = out
-
 
     @property
     def powerspecs(self) -> np.ndarray:
@@ -146,7 +156,9 @@ class MPGadgetPowerSpec(PowerSpec):
         """
         return self._k0
 
-    def read_powerspec(self, submission_dir: str, scale_factor: float) -> Tuple[np.ndarray, np.ndarray]:
+    def read_powerspec(
+        self, submission_dir: str, scale_factor: float
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Read power spectrum from a output folder
 
@@ -164,6 +176,7 @@ class MPGadgetPowerSpec(PowerSpec):
 
         return kk, pk, modes
 
+
 class MultiMPGadgetPowerSpec(MultiPowerSpec):
 
     """
@@ -180,13 +193,15 @@ class MultiMPGadgetPowerSpec(MultiPowerSpec):
     """
 
     def __init__(
-            self,
-            all_submission_dirs: List[str],
-            Latin_json: str,
-            selected_ind: Optional[np.ndarray],
-            scale_factors : List[float] = [1.0000, 0.8333, 0.6667, 0.5000, 0.3333, 0.2500],
-        ) -> None:
-        super().__init__(all_submission_dirs, Latin_json=Latin_json, selected_ind=selected_ind)
+        self,
+        all_submission_dirs: List[str],
+        Latin_json: str,
+        selected_ind: Optional[np.ndarray],
+        scale_factors: List[float] = [1.0000, 0.8333, 0.6667, 0.5000, 0.3333, 0.2500],
+    ) -> None:
+        super().__init__(
+            all_submission_dirs, Latin_json=Latin_json, selected_ind=selected_ind
+        )
 
         # assign attrs for loading MPGadget power specs
         self.scale_factors = scale_factors
@@ -222,10 +237,7 @@ class MultiMPGadgetPowerSpec(MultiPowerSpec):
             parameter_names = self.Latin_dict["parameter_names"]
             # (num of sims, num of parameters)
             params = np.full(
-                (
-                    len(self.Latin_dict[parameter_names[0]]),
-                    len(parameter_names),
-                ),
+                (len(self.Latin_dict[parameter_names[0]]), len(parameter_names),),
                 fill_value=np.nan,
             )
             for ith_param, pname in enumerate(parameter_names):
@@ -238,9 +250,11 @@ class MultiMPGadgetPowerSpec(MultiPowerSpec):
 
             # Get the shape first
             # TODO: might be a better way append arrays
-            ps_test = MPGadgetPowerSpec(self.all_submission_dirs[0], self.scale_factors[0]) # Note: there are default rebinning parameters
-            
-            kk      = ps_test.k0                                      # Note: assumption is all k bins are the same
+            ps_test = MPGadgetPowerSpec(
+                self.all_submission_dirs[0], self.scale_factors[0]
+            )  # Note: there are default rebinning parameters
+
+            kk = ps_test.k0  # Note: assumption is all k bins are the same
             ps_size = ps_test.powerspecs.shape[0]
             mode_size = ps_test.modes.shape[0]
             assert kk.shape[0] == ps_size
@@ -248,19 +262,11 @@ class MultiMPGadgetPowerSpec(MultiPowerSpec):
 
             # (num of simulations, num of redshifts, num of k bins)
             sim_powerspecs = np.full(
-                (
-                    len(self.all_submission_dirs),
-                    len(self.scale_factors),
-                    ps_size,
-                ),
+                (len(self.all_submission_dirs), len(self.scale_factors), ps_size,),
                 fill_value=np.nan,
             )
             sim_modes = np.full(
-                (
-                    len(self.all_submission_dirs),
-                    len(self.scale_factors),
-                    ps_size,
-                ),
+                (len(self.all_submission_dirs), len(self.scale_factors), ps_size,),
                 fill_value=np.nan,
             )
 
@@ -271,14 +277,16 @@ class MultiMPGadgetPowerSpec(MultiPowerSpec):
                     ps = MPGadgetPowerSpec(submission_dir, scale_factor)
 
                     sim_powerspecs[ith_sim, jth_red, :] = ps.powerspecs
-                    sim_modes[ith_sim, jth_red, :]      = ps.modes
+                    sim_modes[ith_sim, jth_red, :] = ps.modes
 
             assert np.sum(np.isnan(sim_powerspecs)) < 1
             f.create_dataset("powerspecs", data=sim_powerspecs)
             f.create_dataset("modes", data=sim_modes)
 
     @staticmethod
-    def load_PowerSpecs(all_submission_dirs: List[str], scale_factor: float) -> Generator:
+    def load_PowerSpecs(
+        all_submission_dirs: List[str], scale_factor: float
+    ) -> Generator:
         """
         Iteratively load the PowerSpec class
         """
