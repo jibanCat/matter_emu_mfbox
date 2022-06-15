@@ -33,8 +33,6 @@ def example_h5(
     Generate training data for the selected points from dmonly simulations.
     """
 
-    assert num_simulations <= len(optimal_ind)
-
     # This is just creating a list of filenames
     test_dir_fn = lambda i: os.path.join(base_dir, fn_outdir(i, npart, box))
 
@@ -51,6 +49,8 @@ def example_h5(
         )
 
     else:
+        assert num_simulations <= len(optimal_ind)
+
         all_submission_dirs = [
             test_dir_fn(i) for i in optimal_ind[:num_simulations]
         ]
