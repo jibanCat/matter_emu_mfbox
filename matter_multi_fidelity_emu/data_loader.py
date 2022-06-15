@@ -3,7 +3,7 @@ Data loader for the matter power spectrum
 """
 
 import os, json
-from typing import List
+from typing import List, Optional
 
 import numpy as np
 import h5py
@@ -12,9 +12,9 @@ from .gpemulator_singlebin import _map_params_to_unit_cube as input_normalize
 from .data_loader_dgmgp import interpolate
 
 # put the folder name on top, easier to find and modify
-def folder_name(num1: int, res1: int, box1: int, num2: int, res2:int, box2: int, z: float):
-    return "Matterpower_{}_res{}box{}_{}_res{}box{}_{}".format(
-        num1, res1, box1, num2, res2, box2, "{:.2g}".format(z).replace(".", "_")
+def folder_name(num1: int, res1: int, box1: int, num2: int, res2:int, box2: int, z: float, selected_ind):
+    return "Matterpower_{}_res{}box{}_{}_res{}box{}_{}_ind_{}".format(
+        num1, res1, box1, num2, res2, box2, "{:.2g}".format(z).replace(".", "_"), "-".join(selected_ind)
     )
 
 def convert_h5_to_txt(
@@ -24,7 +24,7 @@ def convert_h5_to_txt(
         lf_json: str = "data/dmo_60_res128box256/emulator_params.json",
         hf_json: str = "data/dmo_24_res512box256/emulator_params.json",
         test_json: str = "data/dmo_10_res512box256/emulator_params.json",
-        hf_selected_ind: List[int] = [0, 1, 2], ## these should be the index in the "LF" LHD
+        hf_selected_ind: Optional[List[int]] = [0, 1, 2], ## these should be the index in the "LF" LHD
     ):
     """
     Convert the h5 files Martin gave me to txt files to be read by the dataloader.
@@ -110,13 +110,35 @@ def convert_h5_to_txt(
     print("Shape of params", f_hf["params"].shape)
     print("Shape of kfmpc", f_hf["kfmpc"].shape)
     print("Shape of powerspecs", f_hf["powerspecs"].shape)
+    print("Selected indices:", f_hf["selected_ind"][()])
     print("\n")
+
+    selected_ind = f_hf["selected_ind"][()]
+    if hf_selected_ind is not None:
+        ind_hf_sims = np.isin(
+            selected_ind,
+            hf_selected_ind,
+        )
+        print("Check: selected inds are,", selected_ind[ind_hf_sims])
+        assert selected_ind[ind_hf_sims] == hf_selected_ind
+    else:
+        ind_hf_sims = np.isin(
+            selected_ind,
+            np.arange(len(selected_ind)),
+        )
+        print("Check: selected inds are,", selected_ind[ind_hf_sims])
+        assert selected_ind[ind_hf_sims] == hf_selected_ind
 
     # power spectra, all redshifts
     powerspecs_hf = f_hf["powerspecs"][()]
 
     # input parameters
     x_train_hf = f_hf["params"][()]
+
+    powerspec_hf = powerspec_hf[ind_hf_sims, :, :]
+    x_train_hf   = x_train_hf[x_train_hf, :, :]
+    print("-> Shape of powerspecs", f_hf["powerspecs"].shape)
+    print("-> Selected indices:", f_hf["selected_ind"][()])
 
     kfmpc_hf = f_hf["kfmpc"][()]
     assert np.all(np.abs(kfmpc_hf - f_test["kfmpc"][()]) < 1e-10)
