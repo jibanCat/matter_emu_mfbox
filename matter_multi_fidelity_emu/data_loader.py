@@ -14,7 +14,7 @@ from .data_loader_dgmgp import interpolate
 # put the folder name on top, easier to find and modify
 def folder_name(num1: int, res1: int, box1: int, num2: int, res2:int, box2: int, z: float, selected_ind):
     return "Matterpower_{}_res{}box{}_{}_res{}box{}_{}_ind_{}".format(
-        num1, res1, box1, num2, res2, box2, "{:.2g}".format(z).replace(".", "_"), "-".join(selected_ind)
+        num1, res1, box1, num2, res2, box2, "{:.2g}".format(z).replace(".", "_"), "-".join(map(str, selected_ind))
     )
 
 def convert_h5_to_txt(
