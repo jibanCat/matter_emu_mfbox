@@ -79,6 +79,17 @@ def example_h5(
     with open(Latin_json, "r") as fload:
         param_dict = json.load(fload)
 
+    # Also get npart and boxsize
+    # Note: here do a double-check
+    ps = next(mmpgps.load_PowerSpecs(all_submission_dirs))
+    _npart = ps.param_dict["npart"]
+    _box = ps.param_dict["box"]
+    assert npart == _npart
+    assert box == _box
+
+    param_dict["box"] = box
+    param_dict["npart"] = npart
+
     with open(os.path.join(new_folder, "emulator_params.json"), "w") as fwrite:
 
         json.dump(param_dict, fwrite)
