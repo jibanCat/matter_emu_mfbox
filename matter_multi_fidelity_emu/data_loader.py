@@ -2,7 +2,7 @@
 Data loader for the matter power spectrum
 """
 
-import os
+import os, json
 from typing import List
 
 import numpy as np
@@ -18,23 +18,25 @@ def folder_name(num1: int, res1: int, box1: int, num2: int, res2:int, box2: int,
     )
 
 def convert_h5_to_txt(
-        lf_filename: str = "data/emu_smallbox_lowres/cc_emulator_flux_vectors_tau1000000.hdf5",
-        hf_filename: str = "data/emu_smallbox_highres/cc_emulator_flux_vectors_tau1000000.hdf5",
-        test_filename: str = "data/emu_testset/cc_emulator_flux_vectors_tau1000000.hdf5",
-        lf_json: str = "data/emu_smallbox_lowres/emulator_params.json",
-        hf_json: str = "data/emu_smallbox_highres/emulator_params.json",
-        test_json: str = "data/emu_testset/emulator_params.json",
+        lf_filename: str = "data/dmo_60_res128box256/cc_emulator_powerspecs.hdf5",
+        hf_filename: str = "data/dmo_24_res512box256/cc_emulator_powerspecs.hdf5",
+        test_filename: str = "data/dmo_10_res512box256/cc_emulator_powerspecs.hdf5",
+        lf_json: str = "data/dmo_60_res128box256/emulator_params.json",
+        hf_json: str = "data/dmo_24_res512box256/emulator_params.json",
+        test_json: str = "data/dmo_10_res512box256/emulator_params.json",
+        hf_selected_ind: List[int] = [0, 1, 2], ## these should be the index in the "LF" LHD
     ):
     """
     Convert the h5 files Martin gave me to txt files to be read by the dataloader.
 
     Keys:
     ----
-    flux_vectors : Lyman alpha flux power spectrum
-    kfkms : k bins in km/s unit
+    bounds : the bounds of the parameter prior 
+    powerspecs : Matter power spectrum (rebinned)
     kfmpc : k bins in Mpc/h unit
     params : un-normalized input parameters
     zout : redshifts
+    scale_factors : 1 / (zout + 1)
 
     Note: save each redshift as separate folders
     """
@@ -50,13 +52,12 @@ def convert_h5_to_txt(
     with open(test_json, "r") as param:
         param_test = json.load(param)
 
-    param_limits = np.array(param_lf["param_limits"])
-    assert np.all(param_limits == np.array(param_hf["param_limits"]))
-    assert np.all(param_limits == np.array(param_test["param_limits"]))
+    param_limits = np.array(param_lf["bounds"])
+    assert np.all(param_limits == np.array(param_hf["bounds"]))
+    assert np.all(param_limits == np.array(param_test["bounds"]))
 
     # make sure all keys are in the file
-    # TODO: also save kfkms for plotting purpose
-    keys = ['flux_vectors', 'kfkms', 'kfmpc', 'params', 'zout']
+    keys = ['powerspecs', 'kfmpc', 'params', 'zout']
     for key in keys:
         assert key in f_lf.keys()
         assert key in f_hf.keys()
@@ -68,9 +69,8 @@ def convert_h5_to_txt(
     print("Box (Mpc/h):", param_lf["box"])
     print("Shape of redshfits", f_lf["zout"].shape)
     print("Shape of params", f_lf["params"].shape)
-    print("Shape of kfkms", f_lf["kfkms"].shape)
     print("Shape of kfmpc", f_lf["kfmpc"].shape)
-    print("Shape of flux vectors", f_lf["flux_vectors"].shape)
+    print("Shape of powerspecs", f_lf["powerspecs"].shape)
     print("\n")
 
     # use kfmpc so all redshifts use the same k bins
@@ -80,25 +80,25 @@ def convert_h5_to_txt(
     zout = f_lf["zout"][()]
     assert np.all( (zout - f_hf["zout"][()]) < 1e-10 )
 
-    # flux power spectra, all redshifts
-    flux_vectors_lf = f_lf["flux_vectors"][()]
+    # power spectra, all redshifts
+    powerspecs_lf = f_lf["powerspecs"][()]
 
     # input parameters
     x_train_lf = f_lf["params"][()]
 
-    # read flux power spectrum at ith redshift
-    # flux power spectrum | z = ?
-    def get_flux_vector_at_z(i: int, flux: np.ndarray) -> np.ndarray:
-        return flux[:, i * len(kfmpc) : (i + 1) * len(kfmpc)]
+    # read power spectrum at ith redshift
+    # power spectrum | z = ?
+    def get_powerspec_at_z(i: int, powerspecs: np.ndarray) -> np.ndarray:
+        return powerspecs[:, i, :]
 
     # some checking
-    last_flux_vector = get_flux_vector_at_z(len(zout) - 1, flux_vectors_lf)
-    assert len(last_flux_vector) == f_lf["params"].shape[0]
-    assert last_flux_vector.shape[1] == len(kfmpc)
+    last_powerspec = get_powerspec_at_z(len(zout) - 1, powerspecs_lf)
+    assert len(last_powerspec) == f_lf["params"].shape[0]
+    assert last_powerspec.shape[1] == len(kfmpc)
 
-    first_flux_vector = get_flux_vector_at_z(0, flux_vectors_lf)
-    assert len(first_flux_vector) == f_lf["params"].shape[0]
-    assert first_flux_vector.shape[1] == len(kfmpc)
+    first_powerspec = get_powerspec_at_z(0, powerspecs_lf)
+    assert len(first_powerspec) == f_lf["params"].shape[0]
+    assert first_powerspec.shape[1] == len(kfmpc)
 
 
     print("High-fidelity file:")
@@ -107,25 +107,24 @@ def convert_h5_to_txt(
     print("Box (Mpc/h):", param_hf["box"])
     print("Shape of redshfits", f_hf["zout"].shape)
     print("Shape of params", f_hf["params"].shape)
-    print("Shape of kfkms", f_hf["kfkms"].shape)
     print("Shape of kfmpc", f_hf["kfmpc"].shape)
-    print("Shape of flux vectors", f_hf["flux_vectors"].shape)
+    print("Shape of powerspecs", f_hf["powerspecs"].shape)
     print("\n")
 
-    # flux power spectra, all redshifts
-    flux_vectors_hf = f_hf["flux_vectors"][()]
+    # power spectra, all redshifts
+    powerspecs_hf = f_hf["powerspecs"][()]
 
     # input parameters
     x_train_hf = f_hf["params"][()]
 
     # some checking
-    last_flux_vector = get_flux_vector_at_z(len(zout) - 1, flux_vectors_hf)
-    assert len(last_flux_vector) == f_hf["params"].shape[0]
-    assert last_flux_vector.shape[1] == len(kfmpc)
+    last_powerspec = get_powerspec_at_z(len(zout) - 1, powerspecs_hf)
+    assert len(last_powerspec) == f_hf["params"].shape[0]
+    assert last_powerspec.shape[1] == len(kfmpc)
 
-    first_flux_vector = get_flux_vector_at_z(0, flux_vectors_hf)
-    assert len(first_flux_vector) == f_hf["params"].shape[0]
-    assert first_flux_vector.shape[1] == len(kfmpc)
+    first_powerspec = get_powerspec_at_z(0, powerspecs_hf)
+    assert len(first_powerspec) == f_hf["params"].shape[0]
+    assert first_powerspec.shape[1] == len(kfmpc)
 
     # test files: same resolution as high-fidelity
     print("Test file:")
@@ -134,33 +133,32 @@ def convert_h5_to_txt(
     print("Box (Mpc/h):", param_test["box"])
     print("Shape of redshfits", f_test["zout"].shape)
     print("Shape of params", f_test["params"].shape)
-    print("Shape of kfkms", f_test["kfkms"].shape)
     print("Shape of kfmpc", f_test["kfmpc"].shape)
-    print("Shape of flux vectors", f_test["flux_vectors"].shape)
+    print("Shape of powerspecs", f_test["powerspecs"].shape)
     print("\n")
 
-    # flux power spectra, all redshifts
-    flux_vectors_test = f_test["flux_vectors"][()]
+    # power spectra, all redshifts
+    powerspecs_test = f_test["powerspecs"][()]
 
     # input parameters
     x_train_test = f_test["params"][()]
 
     # some checking
-    last_flux_vector = get_flux_vector_at_z(len(zout) - 1, flux_vectors_test)
-    assert len(last_flux_vector) == f_test["params"].shape[0]
-    assert last_flux_vector.shape[1] == len(kfmpc)
+    last_powerspec = get_powerspec_at_z(len(zout) - 1, powerspecs_test)
+    assert len(last_powerspec) == f_test["params"].shape[0]
+    assert last_powerspec.shape[1] == len(kfmpc)
 
-    first_flux_vector = get_flux_vector_at_z(0, flux_vectors_test)
-    assert len(first_flux_vector) == f_test["params"].shape[0]
-    assert first_flux_vector.shape[1] == len(kfmpc)
+    first_powerspec = get_powerspec_at_z(0, powerspecs_test)
+    assert len(first_powerspec) == f_test["params"].shape[0]
+    assert first_powerspec.shape[1] == len(kfmpc)
 
     # output training files, one redshift per folder
     for i,z in enumerate(zout):
         print("Preparing training files in {:.3g}".format(z))
 
-        flux_vector_lf = get_flux_vector_at_z(i, flux_vectors_lf)
-        flux_vector_hf = get_flux_vector_at_z(i, flux_vectors_hf)
-        flux_vector_test = get_flux_vector_at_z(i, flux_vectors_test)
+        powerspec_lf = get_powerspec_at_z(i, powerspecs_lf)
+        powerspec_hf = get_powerspec_at_z(i, powerspecs_hf)
+        powerspec_test = get_powerspec_at_z(i, powerspecs_test)
 
         outdir = folder_name(
             len(x_train_lf),
@@ -182,10 +180,10 @@ def convert_h5_to_txt(
             exist_ok=True,
         )
 
-        # only flux power needs a loop
-        np.savetxt(os.path.join(this_outdir, "train_output_fidelity_0.txt"), flux_vector_lf)
-        np.savetxt(os.path.join(this_outdir, "train_output_fidelity_1.txt"), flux_vector_hf)
-        np.savetxt(os.path.join(this_outdir, "test_output.txt"), flux_vector_test)
+        # only power spec needs a loop
+        np.savetxt(os.path.join(this_outdir, "train_output_fidelity_0.txt"), powerspec_lf)
+        np.savetxt(os.path.join(this_outdir, "train_output_fidelity_1.txt"), powerspec_hf)
+        np.savetxt(os.path.join(this_outdir, "test_output.txt"), powerspec_test)
 
         np.savetxt(os.path.join(this_outdir, "train_input_fidelity_0.txt"), x_train_lf)
         np.savetxt(os.path.join(this_outdir, "train_input_fidelity_1.txt"), x_train_hf)
