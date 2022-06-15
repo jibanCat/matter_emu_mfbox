@@ -194,6 +194,7 @@ def convert_h5_to_txt(
             param_hf["npart"],
             param_hf["box"],
             z,
+            selected_ind=hf_selected_ind,
         )
 
         this_outdir = os.path.join(
