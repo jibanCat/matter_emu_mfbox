@@ -9,7 +9,7 @@ import numpy as np
 import h5py
 
 from .gpemulator_singlebin import _map_params_to_unit_cube as input_normalize
-
+from .data_loader_dgmgp import interpolate
 
 # put the folder name on top, easier to find and modify
 def folder_name(num1: int, res1: int, box1: int, num2: int, res2:int, box2: int, z: float):
@@ -74,8 +74,9 @@ def convert_h5_to_txt(
     print("\n")
 
     # use kfmpc so all redshifts use the same k bins
-    kfmpc = f_lf["kfmpc"][()]
-    assert np.all(np.abs(kfmpc - f_hf["kfmpc"][()]) < 1e-10)
+    kfmpc_lf = f_lf["kfmpc"][()]
+    # Different fidelities have different k bins
+    # assert np.all(np.abs(kfmpc - f_hf["kfmpc"][()]) < 1e-10)
 
     zout = f_lf["zout"][()]
     assert np.all( (zout - f_hf["zout"][()]) < 1e-10 )
@@ -94,11 +95,11 @@ def convert_h5_to_txt(
     # some checking
     last_powerspec = get_powerspec_at_z(len(zout) - 1, powerspecs_lf)
     assert len(last_powerspec) == f_lf["params"].shape[0]
-    assert last_powerspec.shape[1] == len(kfmpc)
+    assert last_powerspec.shape[1] == len(kfmpc_lf)
 
     first_powerspec = get_powerspec_at_z(0, powerspecs_lf)
     assert len(first_powerspec) == f_lf["params"].shape[0]
-    assert first_powerspec.shape[1] == len(kfmpc)
+    assert first_powerspec.shape[1] == len(kfmpc_lf)
 
 
     print("High-fidelity file:")
@@ -117,14 +118,17 @@ def convert_h5_to_txt(
     # input parameters
     x_train_hf = f_hf["params"][()]
 
+    kfmpc_hf = f_hf["kfmpc"][()]
+    assert np.all(np.abs(kfmpc_hf - f_test["kfmpc"][()]) < 1e-10)
+
     # some checking
     last_powerspec = get_powerspec_at_z(len(zout) - 1, powerspecs_hf)
     assert len(last_powerspec) == f_hf["params"].shape[0]
-    assert last_powerspec.shape[1] == len(kfmpc)
+    assert last_powerspec.shape[1] == len(kfmpc_hf)
 
     first_powerspec = get_powerspec_at_z(0, powerspecs_hf)
     assert len(first_powerspec) == f_hf["params"].shape[0]
-    assert first_powerspec.shape[1] == len(kfmpc)
+    assert first_powerspec.shape[1] == len(kfmpc_hf)
 
     # test files: same resolution as high-fidelity
     print("Test file:")
@@ -146,11 +150,11 @@ def convert_h5_to_txt(
     # some checking
     last_powerspec = get_powerspec_at_z(len(zout) - 1, powerspecs_test)
     assert len(last_powerspec) == f_test["params"].shape[0]
-    assert last_powerspec.shape[1] == len(kfmpc)
+    assert last_powerspec.shape[1] == len(kfmpc_hf)
 
     first_powerspec = get_powerspec_at_z(0, powerspecs_test)
     assert len(first_powerspec) == f_test["params"].shape[0]
-    assert first_powerspec.shape[1] == len(kfmpc)
+    assert first_powerspec.shape[1] == len(kfmpc_hf)
 
     # output training files, one redshift per folder
     for i,z in enumerate(zout):
@@ -180,17 +184,28 @@ def convert_h5_to_txt(
             exist_ok=True,
         )
 
+        # Interpolate the LF, 
+        # and limit the HF kmax to the maximum of LF
+        # Min k bins LF <= k bins HF <= Max k bins LF
+        ind_min = (np.log10(kfmpc_lf).min() <= np.log10(kfmpc_hf)) & (np.log10(kfmpc_hf) <= np.log10(kfmpc_lf).max())
+
+        # interpolate: interp(log10_k, Y_lf)(log10_k[ind_min])
+        powerspec_lf_new = interpolate(np.log10(kfmpc_lf), powerspec_lf, np.log10(kfmpc_hf)[ind_min])
+        powerspec_hf_new = powerspec_hf[:, ind_min]
+        powerspec_test_new = powerspec_test[:, ind_min]
+        kfmpc_new = kfmpc_hf[ind_min]
+
         # only power spec needs a loop
-        np.savetxt(os.path.join(this_outdir, "train_output_fidelity_0.txt"), powerspec_lf)
-        np.savetxt(os.path.join(this_outdir, "train_output_fidelity_1.txt"), powerspec_hf)
-        np.savetxt(os.path.join(this_outdir, "test_output.txt"), powerspec_test)
+        np.savetxt(os.path.join(this_outdir, "train_output_fidelity_0.txt"), powerspec_lf_new)
+        np.savetxt(os.path.join(this_outdir, "train_output_fidelity_1.txt"), powerspec_hf_new)
+        np.savetxt(os.path.join(this_outdir, "test_output.txt"), powerspec_test_new)
 
         np.savetxt(os.path.join(this_outdir, "train_input_fidelity_0.txt"), x_train_lf)
         np.savetxt(os.path.join(this_outdir, "train_input_fidelity_1.txt"), x_train_hf)
         np.savetxt(os.path.join(this_outdir, "test_input.txt"), x_train_test)
 
         np.savetxt(os.path.join(this_outdir, "input_limits.txt"), param_limits)
-        np.savetxt(os.path.join(this_outdir, "kf.txt"), np.log10(kfmpc))
+        np.savetxt(os.path.join(this_outdir, "kf.txt"), np.log10(kfmpc_new))
 
 
 class PowerSpecs:
