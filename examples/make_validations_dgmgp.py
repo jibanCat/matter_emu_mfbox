@@ -1,7 +1,18 @@
+from typing import List
+
 import os
 import json
 
-from examples.make_validations import *
+import numpy as np
+from matplotlib import pyplot as plt
+import matplotlib
+
+from matter_multi_fidelity_emu.gpemulator_singlebin import (
+    SingleBinGP,
+    SingleBinLinearGP,
+    SingleBinNonLinearGP,
+)
+from matter_multi_fidelity_emu.data_loader import PowerSpecs
 
 from matter_multi_fidelity_emu.gpemulator_singlebin import SingleBindGMGP
 
@@ -12,7 +23,11 @@ np.random.seed(0)
 
 matplotlib.use("pdf")
 
-n_save = 10
+n_save = 10 # shrink power spec; for testing purpose
+
+save_figure = lambda filename: plt.savefig(
+    "{}.pdf".format(filename), format="pdf", dpi=300
+)
 
 def folder_name(
     num1: int,
@@ -47,9 +62,14 @@ def folder_name(
 def generate_data(
         folder_1: str = "data/50_LR_3_HR_box_512_combined_128res",
         folder_2: str = "data/50_LR_box_300_3_HR_box_512_combined_128res",
+        n_fidelities: int = 2,
     ):
-    data_1 = PowerSpecs(folder=folder_1)
-    data_2 = PowerSpecs(folder=folder_2)
+    data_1 = PowerSpecs(n_fidelities=n_fidelities,)
+    data_1.read_from_txt(folder=folder_1)
+
+    data_2 = PowerSpecs(n_fidelities=n_fidelities,)
+    data_2.read_from_txt(folder=folder_2)
+
     return data_1, data_2
 
 
@@ -224,11 +244,12 @@ def validate_mf(data: PowerSpecs, model: SingleBinNonLinearGP, fidelity: int = 1
 
     mean, var = model.predict(x_test)
 
+    # dx = x dlog(x) = log(10) x dlog10(x)
+    # dlog10(x) = d(log(x) / log(10))
+    vars = (10 ** mean * np.log(10) * np.sqrt(var))**2
+
     # predicted/exact
     pred_exacts = 10 ** mean / 10 ** y_test
-
-    # import pdb
-    # pdb.set_trace()
 
     return mean, var, pred_exacts
 
@@ -246,7 +267,9 @@ def validate_sf(data: PowerSpecs, model: SingleBinGP):
         mean, var = model.predict(x_test[None, :])
 
         all_means.append(10 ** mean[0])
-        all_vars.append(10 ** var[0])
+        # dx = x dlog(x) = log(10) x dlog10(x)
+        # dlog10(x) = d(log(x) / log(10))
+        all_vars.append((10 ** mean[0] * np.log(10) * np.sqrt(var[0]))**2)
 
         # predicted/exact
         all_pred_exacts.append(10 ** mean[0] / 10 ** y_test)
@@ -325,4 +348,3 @@ def do_pred_exact(
     save_figure("predict_exact_" + figure_name)
     plt.close()
     plt.clf()
-
