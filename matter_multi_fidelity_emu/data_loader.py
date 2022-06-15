@@ -195,6 +195,17 @@ def convert_h5_to_txt(
         powerspec_test_new = powerspec_test[:, ind_min]
         kfmpc_new = kfmpc_hf[ind_min]
 
+
+        # new k bins: same k bin over different fidelities
+        print("New k bins:")
+        print("----")
+        print("Shape of kfmpc", kfmpc_new.shape)
+        print("Shape of LF powerspecs", powerspec_lf_new.shape)
+        print("Shape of HF powerspecs", powerspec_hf_new.shape)
+        print("Shape of Test powerspecs", powerspec_test_new.shape)
+        print("\n")
+
+
         # only power spec needs a loop
         np.savetxt(os.path.join(this_outdir, "train_output_fidelity_0.txt"), powerspec_lf_new)
         np.savetxt(os.path.join(this_outdir, "train_output_fidelity_1.txt"), powerspec_hf_new)
