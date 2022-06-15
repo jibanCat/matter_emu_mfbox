@@ -5,12 +5,14 @@ from examples.make_validations import *
 
 from matter_multi_fidelity_emu.gpemulator_singlebin import SingleBindGMGP
 
+from matter_multi_fidelity_emu.data_loader_dgmgp import interpolate
+
 # set a random number seed to reproducibility
 np.random.seed(0)
 
 matplotlib.use("pdf")
 
-n_save = 1
+n_save = 10
 
 def generate_data(
         folder_1: str = "data/50_LR_3_HR_box_512_combined_128res",
@@ -61,6 +63,17 @@ def do_validations(
     # get training and testing data. Normalization included.
     data_1, data_2 = generate_data(folder_1=folder_1, folder_2=folder_2)
 
+    # highres: log10_ks; lowres: log10_k
+    # we are emulating data_1's highres
+    log10_k_target = data_1.kf
+    log10_k_train  = data_2.kf
+    ind_min = (log10_k_target >= log10_k_train.min()) & (log10_k_target <= log10_k_train.max())
+
+    # interpolate: interp(log10_k, Y_lf)(log10_k[ind_min])
+    Y_lf_norm_2 = interpolate(data_2.kf, data_2.Y_train_norm[0], data_1.kf[ind_min])
+
+    assert Y_lf_norm_2.shape[1] == data_1.kf[ind_min].shape[0]
+
 
     # change path for saving figures
     os.chdir(output_folder)
@@ -69,7 +82,7 @@ def do_validations(
     # Data (M1, M2, H)
     dgmgp = SingleBindGMGP(
         X_train=[data_1.X_train_norm[0], data_2.X_train_norm[0], data_1.X_train_norm[1]],
-        Y_train=[data_1.Y_train_norm[0][:, ::n_save], data_2.Y_train_norm[0][:, ::n_save], data_1.Y_train_norm[1][:, ::n_save]],
+        Y_train=[data_1.Y_train_norm[0][:, ::n_save], Y_lf_norm_2[:, ::n_save], data_1.Y_train_norm[1][:, ::n_save]],
         n_fidelities=n_fidelities,
         n_samples=500,
         optimization_restarts=n_optimization_restarts,
@@ -80,7 +93,7 @@ def do_validations(
     # high-fidelity only emulator
     hf_only = SingleBinGP(data_1.X_train_norm[-1], data_1.Y_train[-1][:, ::n_save])
     lf_only_1 = SingleBinGP(data_1.X_train_norm[0], data_1.Y_train[0][:, ::n_save])
-    lf_only_2 = SingleBinGP(data_2.X_train_norm[0], data_2.Y_train[0][:, ::n_save])
+    lf_only_2 = SingleBinGP(data_2.X_train_norm[0], Y_lf_norm_2[:, ::n_save])
 
     # optimize each model
     hf_only.optimize_restarts(n_optimization_restarts=n_optimization_restarts)
@@ -144,6 +157,10 @@ def do_validations(
 
     # with open("lf_only.json", "w") as f:
     #     json.dump(lf_only.to_dict(), f, indent=2)
+
+    with open("dgmgp.json", "w") as f:
+        json.dump(dgmgp.to_dict(), f, indent=2)
+
 
     # saving AR1
     os.makedirs("dGMGP/", exist_ok=True)
