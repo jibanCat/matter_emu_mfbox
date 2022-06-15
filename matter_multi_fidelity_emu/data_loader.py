@@ -225,9 +225,12 @@ def convert_h5_to_txt(
         )
 
         # interpolate: interp(log10_k, Y_lf)(log10_k[ind_min])
+        # I do want to interpolate in loglog scale.
+        # TODO: Think about if our smooth prior is on linear or log scale?
         powerspec_lf_new = interpolate(
-            np.log10(kfmpc_lf), powerspec_lf, np.log10(kfmpc_hf)[ind_min]
+            np.log10(kfmpc_lf), np.log10(powerspec_lf), np.log10(kfmpc_hf)[ind_min]
         )
+        powerspec_lf_new = 10**powerspec_lf_new
         powerspec_hf_new = powerspec_hf[:, ind_min]
         powerspec_test_new = powerspec_test[:, ind_min]
         kfmpc_new = kfmpc_hf[ind_min]
@@ -268,10 +271,17 @@ class PowerSpecs:
     def __init__(self, folder: str = "data/50_LR_3_HR/", n_fidelities: int = 2):
         self.n_fidelities = n_fidelities
 
+    def read_from_txt(self, folder: str = "data/50_LR_3_HR/",):
+        """
+        Read the multi-fidelity training set from txt files (they have a specific data structure)
+
+        See here https://github.com/jibanCat/matter_multi_fidelity_emu/tree/main/data/50_LR_3_HR
+        """
         # training data
         self.X_train = []
         self.Y_train = []
-        for i in range(n_fidelities):
+    
+        for i in range(self.n_fidelities):
             x_train = np.loadtxt(
                 os.path.join(folder, "train_input_fidelity_{}.txt".format(i))
             )
@@ -334,3 +344,123 @@ class PowerSpecs:
         y_train_norm.append(self.Y_train[-1])
 
         return y_train_norm
+
+
+class PowerSpecsMedianNorm:
+    """
+    A data loader to load multi-fidelity training and test data
+
+    Assume two fidelities, conditioning on a single redshift.
+
+    Normalizing using median power, keep the scales be linear (instead of log).
+    """
+
+    def __init__(self,  n_fidelities: int = 2):
+        self.n_fidelities = n_fidelities
+
+    def read_from_array(self, kf: np.ndarray, X_train_list: List[np.ndarray], Y_train_list: List[np.ndarray],
+            X_test: List[np.ndarray], Y_test: List[np.ndarray], parameter_limits: np.ndarray):
+        """
+        Assign training/test set without using the txt files.
+        Note that specific data structure needs to be fullfilled.
+
+        See here https://github.com/jibanCat/matter_multi_fidelity_emu/tree/main/data/50_LR_3_HR
+        """
+        # training data
+        self.X_train = X_train_list
+        self.Y_train = Y_train_list
+
+        assert self.n_fidelities == len(self.X_train)
+
+        # test : in List, List[array], but only one element
+        self.X_test = X_test
+        self.Y_test = Y_test
+
+        assert len(X_test) == 1
+        assert len(Y_test) == 1
+        
+        self.parameter_limits = parameter_limits
+        self.kf = kf
+
+        assert len(self.kf) == self.Y_test[0].shape[1]
+        assert len(self.kf) == self.Y_train[0].shape[1]
+
+
+    def read_from_txt(self, folder: str = "data/50_LR_3_HR/",):
+        """
+        Read the multi-fidelity training set from txt files (they have a specific data structure)
+
+        See here https://github.com/jibanCat/matter_multi_fidelity_emu/tree/main/data/50_LR_3_HR
+        """
+        # training data
+        self.X_train = []
+        self.Y_train = []
+        for i in range(self.n_fidelities):
+            x_train = np.loadtxt(
+                os.path.join(folder, "train_input_fidelity_{}.txt".format(i))
+            )
+            y_train = np.loadtxt(
+                os.path.join(folder, "train_output_fidelity_{}.txt".format(i))
+            )
+
+            self.X_train.append(x_train)
+            self.Y_train.append(y_train)
+
+        # parameter limits for normalization
+        self.parameter_limits = np.loadtxt(os.path.join(folder, "input_limits.txt"))
+
+        # testing data
+        self.X_test = []
+        self.Y_test = []
+        self.X_test.append(np.loadtxt(os.path.join(folder, "test_input.txt")))
+        self.Y_test.append(np.loadtxt(os.path.join(folder, "test_output.txt")))
+
+        # load k bins (in log)
+        self.kf = np.loadtxt(os.path.join(folder, "kf.txt"))
+
+        assert len(self.kf) == self.Y_test[0].shape[1]
+        assert len(self.kf) == self.Y_train[0].shape[1]
+
+    @property
+    def X_train_norm(self):
+        """
+        Normalized input parameters
+        """
+        x_train_norm = []
+        for x_train in self.X_train:
+            x_train_norm.append(input_normalize(x_train, self.parameter_limits))
+
+        return x_train_norm
+
+    @property
+    def X_test_norm(self):
+        """
+        Normalized input parameters
+        """
+        x_test_norm = []
+        for x_test in self.X_test:
+            x_test_norm.append(input_normalize(x_test, self.parameter_limits))
+
+        return x_test_norm
+
+    @property
+    def Y_train_norm(self):
+        """
+        Normalized training output. Subtract the low-fidelity data with
+        their sample mean. Don't change high-fidelity data.
+        """
+        y_train_norm = []
+
+        #Normalise the flux vectors by the median power spectrum.
+        #This ensures that the GP prior (a zero-mean input) is close to true.
+        medind = np.argsort(np.mean(self.Y_train[0], axis=1))[np.shape(self.Y_train[0])[0]//2]
+
+        self.scalefactors = self.Y_train[0][medind,:]
+
+        y_normspectra = []
+        for y_train in self.Y_train:
+            normspectra = y_train / self.scalefactors - 1.
+
+            y_normspectra.append(normspectra)
+
+        return y_normspectra
