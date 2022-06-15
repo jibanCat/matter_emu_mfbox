@@ -246,12 +246,12 @@ def convert_h5_to_txt(
 
         # only power spec needs a loop
         np.savetxt(
-            os.path.join(this_outdir, "train_output_fidelity_0.txt"), powerspec_lf_new
+            os.path.join(this_outdir, "train_output_fidelity_0.txt"), np.log10(powerspec_lf_new)
         )
         np.savetxt(
-            os.path.join(this_outdir, "train_output_fidelity_1.txt"), powerspec_hf_new
+            os.path.join(this_outdir, "train_output_fidelity_1.txt"), np.log10(powerspec_hf_new)
         )
-        np.savetxt(os.path.join(this_outdir, "test_output.txt"), powerspec_test_new)
+        np.savetxt(os.path.join(this_outdir, "test_output.txt"), np.log10(powerspec_test_new))
 
         np.savetxt(os.path.join(this_outdir, "train_input_fidelity_0.txt"), x_train_lf)
         np.savetxt(os.path.join(this_outdir, "train_input_fidelity_1.txt"), x_train_hf)
