@@ -61,7 +61,7 @@ class SingleBinGP:
 
         self.name = "single_fidelity"
 
-    def optimize_restarts(self, n_optimization_restarts: int) -> None:
+    def optimize_restarts(self, n_optimization_restarts: int, parallel: bool = False) -> None:
         """
         Optimize GP on each bin of the power spectrum.
         """
@@ -69,7 +69,7 @@ class SingleBinGP:
 
         _log.info("\n --- Optimization: ---\n".format(self.name))
         for i,gp in enumerate(self.gpy_models):
-            gp.optimize_restarts(n_optimization_restarts)
+            gp.optimize_restarts(n_optimization_restarts, parallel=parallel)
             models.append(gp)
 
         self.models = models
@@ -182,7 +182,7 @@ class SingleBinLinearGP:
 
         self.name = "ar1"
 
-    def optimize(self, n_optimization_restarts: int) -> None:
+    def optimize(self, n_optimization_restarts: int, parallel: bool = False) -> None:
         """
         Optimize GP on each bin of the power spectrum.
         """
@@ -207,7 +207,7 @@ class SingleBinLinearGP:
                 n_optimization_restarts,
                 verbose=model.verbose_optimization,
                 robust=True,
-                parallel=False,
+                parallel=parallel,
             )
 
             # unfix noise and re-optimize
@@ -222,7 +222,7 @@ class SingleBinLinearGP:
                 n_optimization_restarts,
                 verbose=model.verbose_optimization,
                 robust=True,
-                parallel=False,
+                parallel=parallel,
             )
 
             models.append(model)
@@ -300,6 +300,7 @@ class SingleBindGMGP:
         optimization_restarts: int = 30,
         # turn_off_bias: bool = False,
         ARD_last_fidelity: bool = False,
+        parallel: bool = False,
     ) -> None:
 
         self.n_samples = n_samples
@@ -336,7 +337,7 @@ class SingleBindGMGP:
             m1.optimize(max_iters = 500)
             m1[".*Gaussian_noise"].unfix()
             m1[".*Gaussian_noise"].constrain_positive()
-            m1.optimize_restarts(optimization_restarts, optimizer = "bfgs",  max_iters = 100)
+            m1.optimize_restarts(optimization_restarts, optimizer = "bfgs",  max_iters = 100, parallel=parallel)
 
             mu1, v1 = m1.predict(D3)
 
@@ -349,7 +350,7 @@ class SingleBindGMGP:
             m2.optimize(max_iters = 500)
             m2[".*Gaussian_noise"].unfix()
             m2[".*Gaussian_noise"].constrain_positive()
-            m2.optimize_restarts(optimization_restarts, optimizer = "bfgs",  max_iters = 100)
+            m2.optimize_restarts(optimization_restarts, optimizer = "bfgs",  max_iters = 100, parallel=parallel)
 
             mu2, v2 = m2.predict(D3)
 
@@ -376,7 +377,7 @@ class SingleBindGMGP:
                         m3.optimize(max_iters = 500)
                         m3[".*Gaussian_noise"].unfix()
                         m3[".*Gaussian_noise"].constrain_positive()
-                        m3.optimize_restarts(optimization_restarts, optimizer = "bfgs",  max_iters = 100)
+                        m3.optimize_restarts(optimization_restarts, optimizer = "bfgs",  max_iters = 100, parallel=parallel)
                         
                         return m3
 
@@ -530,7 +531,7 @@ class SingleBinNonLinearGP:
 
         self.name = "nargp"
 
-    def optimize(self) -> None:
+    def optimize(self, parallel: bool = False) -> None:
         """
         Optimize GP on each bin of the power spectrum.
         """
@@ -543,12 +544,12 @@ class SingleBinNonLinearGP:
             for m in gp.models:
                 m.Gaussian_noise.variance.fix(1e-6)
             
-            gp.optimize()
+            gp.optimize(parallel=parallel)
 
             for m in gp.models:
                 m.Gaussian_noise.variance.unfix()
             
-            gp.optimize()
+            gp.optimize(parallel=parallel)
 
 
     def predict(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:

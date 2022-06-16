@@ -59,6 +59,7 @@ def optimize_mfemulator(
     dGMGP: bool = True,
     lf_filename_2: str = "data/dmo_60_res128box100/cc_emulator_powerspecs.hdf5", # dGMGP
     lf_json_2: str = "data/dmo_60_res128box100/emulator_params.json",            # dGMGP
+    parallel: bool = False,
 ):
     """
     A function runs through all necessary procedures for training/testing the MF emulator:
@@ -249,6 +250,7 @@ def do_validations(
     n_fidelities: int = 2,
     turn_off_bias_nargp: bool = False,
     ARD_last_fidelity: bool = False,
+    parallel: bool = False,
 ):
     """
     Train and test models (for separate redshift), and plot
@@ -315,10 +317,10 @@ def do_validations(
     lf_only = SingleBinGP(data.X_train_norm[0], data.Y_train[0][:, ::n_save])
 
     # optimize each model
-    ar1.optimize(n_optimization_restarts=n_optimization_restarts)
-    nargp.optimize()
-    hf_only.optimize_restarts(n_optimization_restarts=n_optimization_restarts)
-    lf_only.optimize_restarts(n_optimization_restarts=n_optimization_restarts)
+    ar1.optimize(n_optimization_restarts=n_optimization_restarts, parallel=parallel)
+    nargp.optimize(parallel=parallel)
+    hf_only.optimize_restarts(n_optimization_restarts=n_optimization_restarts, parallel=parallel)
+    lf_only.optimize_restarts(n_optimization_restarts=n_optimization_restarts, parallel=parallel)
 
     # testing set
     means_ar1, vars_ar1, pred_exacts_ar1 = validate_mf(data, model=ar1)

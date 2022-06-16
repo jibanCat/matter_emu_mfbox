@@ -81,6 +81,7 @@ def do_validations(
     n_fidelities: int = 2,
     output_folder: str = "output/dGMGP_50_dmonly128_m1mpc512_m2mpc300_3_dmonly512",
     ARD_last_fidelity: bool = False,
+    parallel: bool = False,
 ):
     """
     Train and test models, and plot
@@ -137,6 +138,7 @@ def do_validations(
         n_samples=500,
         optimization_restarts=n_optimization_restarts,
         ARD_last_fidelity=ARD_last_fidelity,
+        parallel=parallel,
     )
 
     # Single-fidelity
@@ -146,9 +148,9 @@ def do_validations(
     lf_only_2 = SingleBinGP(data_2.X_train_norm[0], Y_lf_2[:, ::n_save])
 
     # optimize each model
-    hf_only.optimize_restarts(n_optimization_restarts=n_optimization_restarts)
-    lf_only_1.optimize_restarts(n_optimization_restarts=n_optimization_restarts)
-    lf_only_2.optimize_restarts(n_optimization_restarts=n_optimization_restarts)
+    hf_only.optimize_restarts(n_optimization_restarts=n_optimization_restarts, parallel=parallel)
+    lf_only_1.optimize_restarts(n_optimization_restarts=n_optimization_restarts, parallel=parallel)
+    lf_only_2.optimize_restarts(n_optimization_restarts=n_optimization_restarts, parallel=parallel)
 
     # testing set
     # import pdb
