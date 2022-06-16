@@ -52,7 +52,8 @@ class SingleBinGP:
             # each parameter, as they may have very different physical properties.
             nparams = np.shape(X_hf)[1]
 
-            kernel = GPy.kern.RBF(nparams, ARD=True)            
+            # kernel = GPy.kern.RBF(nparams, ARD=True)            
+            kernel = GPy.kern.Matern52(nparams, ARD=True)            
 
             gp = GPy.models.GPRegression(X_hf, Y_hf[:, [i]], kernel)
             gpy_models.append(gp)
@@ -164,11 +165,15 @@ class SingleBinLinearGP:
 
                 # kernel = GPy.kern.Linear(nparams, ARD=True)
                 # kernel = GPy.kern.RatQuad(nparams, ARD=True)
-                kernel = GPy.kern.RBF(nparams, ARD=True)
+                # kernel = GPy.kern.RBF(nparams, ARD=True)
+                kernel = GPy.kern.Matern52(nparams, ARD=True)
+
                 
                 # final fidelity not ARD due to lack of training data
                 if j == n_fidelities - 1:
-                    kernel = GPy.kern.RBF(nparams, ARD=ARD_last_fidelity)
+                    # kernel = GPy.kern.RBF(nparams, ARD=ARD_last_fidelity)
+                    kernel = GPy.kern.Matern52(nparams, ARD=ARD_last_fidelity)
+
 
                 kernel_list.append(kernel)
 
@@ -329,7 +334,9 @@ class SingleBindGMGP:
             active_dimensions = np.arange(0,dim)
 
             ''' M1 : Train LF model 1 '''
-            k1 = GPy.kern.RBF(dim, ARD = True)
+            # k1 = GPy.kern.RBF(dim, ARD = True)
+            k1 = GPy.kern.Matern52(dim, ARD = True)
+
             m1 = GPy.models.GPRegression(X=D1, Y=this_z1, kernel=k1)
 
             m1[".*Gaussian_noise"] = m1.Y.var()*0.01
@@ -342,7 +349,9 @@ class SingleBindGMGP:
             mu1, v1 = m1.predict(D3)
 
             ''' M2 : Train LF model 2 '''
-            k2 = GPy.kern.RBF(dim, ARD = True)
+            # k2 = GPy.kern.RBF(dim, ARD = True)
+            k2 = GPy.kern.Matern52(dim, ARD = True)
+
             m2 = GPy.models.GPRegression(X=D2, Y=this_z2, kernel=k2)
 
             m2[".*Gaussian_noise"] = m2.Y.var()*0.01
@@ -363,12 +372,18 @@ class SingleBindGMGP:
 
                 while True:
                     try:
+                        # k3 = (
+                        #         GPy.kern.Linear(2,active_dims=[dim,dim+1])+
+                        #         GPy.kern.RBF(1, active_dims = [dim])*
+                        #         GPy.kern.RBF(1, active_dims = [dim+1])
+                        #     )*  GPy.kern.RBF(dim, active_dims = active_dimensions, ARD = ARD_last_fidelity) \
+                        #     +   GPy.kern.RBF(dim, active_dims = active_dimensions, ARD = ARD_last_fidelity)
                         k3 = (
                                 GPy.kern.Linear(2,active_dims=[dim,dim+1])+
-                                GPy.kern.RBF(1, active_dims = [dim])*
-                                GPy.kern.RBF(1, active_dims = [dim+1])
-                            )*  GPy.kern.RBF(dim, active_dims = active_dimensions, ARD = ARD_last_fidelity) \
-                            +   GPy.kern.RBF(dim, active_dims = active_dimensions, ARD = ARD_last_fidelity)
+                                GPy.kern.Matern52(1, active_dims = [dim])*
+                                GPy.kern.Matern52(1, active_dims = [dim+1])
+                            )*  GPy.kern.Matern52(dim, active_dims = active_dimensions, ARD = ARD_last_fidelity) \
+                            +   GPy.kern.Matern52(dim, active_dims = active_dimensions, ARD = ARD_last_fidelity)
 
                         m3 = GPy.models.GPRegression(X=XX, Y=this_z3, kernel=k3)
 
@@ -509,7 +524,7 @@ class SingleBinNonLinearGP:
         # make a GP on each P(k) bin
         for i in range(Y.shape[1]):
             # make GP non linear kernel
-            base_kernel_1 = GPy.kern.RBF
+            base_kernel_1 = GPy.kern.Matern52
             kernels = make_non_linear_kernels(
                 base_kernel_1, n_fidelities, X.shape[1] - 1, ARD=True, n_output_dim=1,
                 turn_off_bias=turn_off_bias, ARD_last_fidelity=ARD_last_fidelity,
