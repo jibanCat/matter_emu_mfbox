@@ -50,6 +50,8 @@ def optimize_mfemulator(
         1,
         2,
     ],  ## these should be the index in the "LF" LHD
+    num_lf: int = 60, # number of Low-fidelity design points
+    num_lf_2: int = 60, # number of Low-fidelity design points
     n_optimization_restarts: int = 20,
     n_fidelities: int = 2,  # NOTE: only support 2 fidelities now.
     turn_off_bias_nargp: bool = False,
@@ -84,7 +86,7 @@ def optimize_mfemulator(
     """
 
     # Convert h5,json files Martin gave me into training folders for MFEmu
-    # NOTE: Nameing of the training folder follows matter_multi_fidelity_emu.dataloader.folder_name
+    # NOTE: Naming of the training folder follows matter_multi_fidelity_emu.dataloader.folder_name
     print("Generate files for the 1st low-fidelity node:")
     print("----")
     convert_h5_to_txt(
@@ -95,6 +97,7 @@ def optimize_mfemulator(
         hf_json=hf_json,
         test_json=test_json,
         hf_selected_ind=hf_selected_ind,
+        num_lf=num_lf,
     )
     print("Generate files for the 2nd low-fidelity node:")
     print("----")
@@ -106,6 +109,7 @@ def optimize_mfemulator(
         hf_json=hf_json,
         test_json=test_json,
         hf_selected_ind=hf_selected_ind,
+        num_lf=num_lf,
     )
 
     # extract the boxsize and res
@@ -118,13 +122,12 @@ def optimize_mfemulator(
 
     f_lf = h5py.File(lf_filename, "r")
     f_lf_2 = h5py.File(lf_filename_2, "r") # dGMGP
-    f_hf = h5py.File(hf_filename, "r")
 
     # extract available zs
     zout       = f_lf["zout"][()]
     # extract params
-    x_train_lf   = f_lf["params"][()]
-    x_train_lf_2 = f_lf_2["params"][()]
+    x_train_lf   = f_lf["params"][()][:num_lf, :]
+    x_train_lf_2 = f_lf_2["params"][()][:num_lf_2, :]
 
     # The training data follows this naming (redshift separated)
     # Now we just read them separately.

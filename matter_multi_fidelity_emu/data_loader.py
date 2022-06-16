@@ -46,6 +46,7 @@ def convert_h5_to_txt(
         1,
         2,
     ],  ## these should be the index in the "LF" LHD
+    num_lf: int = 60, # number of Low-fidelity design points
 ):
     """
     Convert the h5 files Martin gave me to txt files to be read by the dataloader.
@@ -58,6 +59,11 @@ def convert_h5_to_txt(
     params : un-normalized input parameters
     zout : redshifts
     scale_factors : 1 / (zout + 1)
+
+    Parameters:
+    ----
+    hf_selected_ind : the selected subset for hf training set within the lf LHD.
+    num_lf : number of LF design points, assuming to be params[:num_lf].
 
     Note: save each redshift as separate folders
     """
@@ -104,9 +110,16 @@ def convert_h5_to_txt(
 
     # power spectra, all redshifts
     powerspecs_lf = f_lf["powerspecs"][()]
+    # Select a subset of lf points for training.
+    assert num_lf <= len(powerspecs_lf)
+    powerspecs_lf = powerspecs_lf[:num_lf, :, :]
+    print("=> Shape of powerspecs", powerspecs_lf.shape)
 
     # input parameters
     x_train_lf = f_lf["params"][()]
+    # Select a subset of lf points for training.
+    assert num_lf <= len(x_train_lf)
+    x_train_lf = x_train_lf[:num_lf, :]
 
     # read power spectrum at ith redshift
     # power spectrum | z = ?
@@ -115,11 +128,11 @@ def convert_h5_to_txt(
 
     # some checking
     last_powerspec = get_powerspec_at_z(len(zout) - 1, powerspecs_lf)
-    assert len(last_powerspec) == f_lf["params"].shape[0]
+    assert len(last_powerspec) == x_train_lf.shape[0]
     assert last_powerspec.shape[1] == len(kfmpc_lf)
 
     first_powerspec = get_powerspec_at_z(0, powerspecs_lf)
-    assert len(first_powerspec) == f_lf["params"].shape[0]
+    assert len(first_powerspec) == x_train_lf.shape[0]
     assert first_powerspec.shape[1] == len(kfmpc_lf)
 
     print("High-fidelity file:")
