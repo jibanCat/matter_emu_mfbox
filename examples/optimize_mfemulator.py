@@ -31,7 +31,7 @@ np.random.seed(0)
 
 matplotlib.use("pdf")
 
-n_save = 10 # shrink power spec; for testing purpose
+n_save = 1 # shrink power spec; for testing purpose
 
 save_figure = lambda filename: plt.savefig(
     "{}.pdf".format(filename), format="pdf", dpi=300
