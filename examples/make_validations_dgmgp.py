@@ -119,12 +119,21 @@ def do_validations(
     log10_k_target = data_1.kf
     log10_k_train  = data_2.kf
     ind_min = (log10_k_target >= log10_k_train.min()) & (log10_k_target <= log10_k_train.max())
-
     # interpolate: interp(log10_k, Y_lf)(log10_k[ind_min])
-    Y_lf_norm_2 = interpolate(data_2.kf, data_2.Y_train_norm[0], data_1.kf[ind_min])
-    Y_lf_2 = interpolate(data_2.kf, data_2.Y_train[0], data_1.kf[ind_min])
-    assert Y_lf_norm_2.shape[1] == data_1.kf[ind_min].shape[0]
+    data_2.Y_train_norm[0] = interpolate(data_2.kf, data_2.Y_train_norm[0], data_1.kf[ind_min])
+    data_2.Y_train[0]      = interpolate(data_2.kf, data_2.Y_train[0], data_1.kf[ind_min])
+    assert data_2.Y_train_norm[0].shape[1] == data_1.kf[ind_min].shape[0]
+    # HF powerspecs trim to same size as LF
+    data_1.Y_train_norm[0] = data_1.Y_train_norm[0][:, ind_min]
+    data_1.Y_train[0]      = data_1.Y_train[0][:, ind_min]
+    data_1.Y_train_norm[1] = data_1.Y_train_norm[1][:, ind_min]
+    data_1.Y_train[1]      = data_1.Y_train[1][:, ind_min]
 
+    data_1.Y_test[0]       = data_1.Y_test[0][:, ind_min]
+
+    kf = data_1.kf[ind_min]
+    data_1.kf = kf
+    data_2.kf = kf
 
     # change path for saving figures
     os.chdir(output_folder)
@@ -133,7 +142,7 @@ def do_validations(
     # Data (M1, M2, H)
     dgmgp = SingleBindGMGP(
         X_train=[data_1.X_train_norm[0], data_2.X_train_norm[0], data_1.X_train_norm[1]],
-        Y_train=[data_1.Y_train_norm[0][:, ::n_save], Y_lf_norm_2[:, ::n_save], data_1.Y_train_norm[1][:, ::n_save]],
+        Y_train=[data_1.Y_train_norm[0][:, ::n_save], data_2.Y_train_norm[0][:, ::n_save], data_1.Y_train_norm[1][:, ::n_save]],
         n_fidelities=n_fidelities,
         n_samples=500,
         optimization_restarts=n_optimization_restarts,
@@ -145,7 +154,7 @@ def do_validations(
     # high-fidelity only emulator
     hf_only = SingleBinGP(data_1.X_train_norm[-1], data_1.Y_train[-1][:, ::n_save])
     lf_only_1 = SingleBinGP(data_1.X_train_norm[0], data_1.Y_train[0][:, ::n_save])
-    lf_only_2 = SingleBinGP(data_2.X_train_norm[0], Y_lf_2[:, ::n_save])
+    lf_only_2 = SingleBinGP(data_2.X_train_norm[0], data_2.Y_train[0][:, ::n_save])
 
     # optimize each model
     hf_only.optimize_restarts(n_optimization_restarts=n_optimization_restarts, parallel=parallel)
