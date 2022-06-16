@@ -236,6 +236,8 @@ def do_validations(
     # back to root folder
     os.chdir(old_dir)
 
+    return data_1.kf[::n_save], pred_exacts_dgmgp
+
 def validate_mf(data: PowerSpecs, model: SingleBinNonLinearGP, fidelity: int = 1):
     """
     Validate the trained MFEmulators
