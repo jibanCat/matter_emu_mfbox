@@ -43,6 +43,10 @@ class ValidationLoader:
         )  # this is a typo I forgot to fix in make_validations
         assert self._all_gp_mean.shape[0] == len(self.num_lowres_list)
 
+        # load predict/exact
+        self._pred_exacts =  self.load_array(self.outdirs, "pred_exacts")
+        self._pred_exacts_hf =  self.load_array(self.outdirs, "pred_exacts_hf")
+
         # load highRes GP predictions
         self._all_hf_gp_mean = self.load_array(self.outdirs, "all_hf_gp_mean")
         self._all_hf_gp_std = np.sqrt(self.load_array(
@@ -61,6 +65,11 @@ class ValidationLoader:
             if len(self._all_lf_gp_std.shape) != len(self._all_lf_gp_mean.shape):
                 print("[Warning] only have 1 std for LF per spectrum.")
                 self._all_lf_gp_std = np.repeat(self._all_lf_gp_std[:, :, None], self._all_lf_gp_mean.shape[2], axis=2)
+
+
+            # load predict/exact
+            self._pred_exacts_lf =  self.load_array(self.outdirs, "pred_exacts_lf")
+
         else:
             # For dGMGP files, there are two LF predictions
             # L1 node
@@ -72,6 +81,10 @@ class ValidationLoader:
                 print("[Warning] only have 1 std for LF per spectrum.")
                 self._all_lf_gp_std = np.repeat(self._all_lf_gp_std[:, :, None], self._all_lf_gp_mean.shape[2], axis=2)
 
+            # load predict/exact
+            self._pred_exacts_lf =  self.load_array(self.outdirs, "pred_exacts_lf_1")
+
+
             # L2 node
             self._all_lf_gp_mean_2 = self.load_array(self.outdirs, "all_lf_gp_mean_2")
             self._all_lf_gp_std_2 = np.sqrt(self.load_array(
@@ -80,6 +93,9 @@ class ValidationLoader:
             if len(self._all_lf_gp_std_2.shape) != len(self._all_lf_gp_mean_2.shape):
                 print("[Warning] only have 1 std for LF per spectrum.")
                 self._all_lf_gp_std_2 = np.repeat(self._all_lf_gp_std_2[:, :, None], self._all_lf_gp_mean_2.shape[2], axis=2)
+
+            # load predict/exact
+            self._pred_exacts_lf_2 =  self.load_array(self.outdirs, "pred_exacts_lf_2")
 
 
         # load true simulations
@@ -213,7 +229,7 @@ class ValidationLoader:
 
     @property
     def pred_div_exact(self):
-        return self.log2real(self._all_gp_mean) / self.log2real(self._all_true)        
+        return self._pred_exacts
 
     @property
     def relative_errors(self):
@@ -231,15 +247,26 @@ class ValidationLoader:
         return self.relative_errors.mean(axis=2)
 
     @property
-    def pred_div_exact_sf(self):
-        return self.log2real(self._all_hf_gp_mean) / self.log2real(self._all_true)
+    def pred_div_exact_hf(self):
+        return self._pred_exacts_hf
 
     @property
-    def relative_errors_sf(self):
+    def pred_div_exact_lf(self):
+        return self._pred_exacts_lf
+
+    @property
+    def relative_errors_hf(self):
         """
         Shape (number of emulators, number of test simulations, number of k bins)
         """
-        return np.abs(self.pred_div_exact_sf - 1)
+        return np.abs(self.pred_div_exact_hf - 1)
+
+    @property
+    def relative_errors_lf(self):
+        """
+        Shape (number of emulators, number of test simulations, number of k bins)
+        """
+        return np.abs(self.pred_div_exact_lf - 1)
 
     @property
     def all_test_hf_errors(self):
@@ -247,7 +274,15 @@ class ValidationLoader:
         Relative test errors averaged over k bins,
         shape (number of emulators, number of test simulations)
         """
-        return self.relative_errors_sf.mean(axis=2)
+        return self.relative_errors_lf.mean(axis=2)
+
+    @property
+    def all_test_lf_errors(self):
+        """
+        Relative test errors averaged over k bins,
+        shape (number of emulators, number of test simulations)
+        """
+        return self.relative_errors_lf.mean(axis=2)
 
 
     def plot_pred_exact(
@@ -331,7 +366,6 @@ class ValidationLoader:
         # mean HF single-fidelity test error
         test_hf_error = self.all_test_hf_errors.mean(axis=1)[0] # all emulators have the same HF test errors
 
-        plt.figure(figsize=(8, 5))
         plt.plot(self.num_lowres_list, test_mean, label="Mean[(pred-true)/true]")
         plt.fill_between(
             self.num_lowres_list,
@@ -347,7 +381,7 @@ class ValidationLoader:
             ls="--",
             color="C1",
             label="High-fidelity only emulator with {} HR: Mean test error: {:.2g}".format(
-                self.num_highres + 1, test_hf_error
+                self.num_highres, test_hf_error
             ),
         )
         plt.xlabel("Number of LowRes Simulations")
