@@ -189,6 +189,7 @@ def optimize_mfemulator(
             n_fidelities=n_fidelities,
             turn_off_bias_nargp=turn_off_bias_nargp,
             ARD_last_fidelity=ARD_last_fidelity,
+            parallel=parallel,
         )
         print("\n")
 
@@ -201,6 +202,7 @@ def optimize_mfemulator(
             n_fidelities=n_fidelities,
             turn_off_bias_nargp=turn_off_bias_nargp,
             ARD_last_fidelity=ARD_last_fidelity,
+            parallel=parallel,
         )
         print("\n")
 
@@ -214,6 +216,7 @@ def optimize_mfemulator(
                 n_optimization_restarts=n_optimization_restarts,
                 n_fidelities=n_fidelities,
                 ARD_last_fidelity=ARD_last_fidelity,
+                parallel=parallel,
             )
 
             emulator_comparison_list(
