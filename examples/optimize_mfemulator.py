@@ -109,7 +109,7 @@ def optimize_mfemulator(
         hf_json=hf_json,
         test_json=test_json,
         hf_selected_ind=hf_selected_ind,
-        num_lf=num_lf,
+        num_lf=num_lf_2,
     )
 
     # extract the boxsize and res
