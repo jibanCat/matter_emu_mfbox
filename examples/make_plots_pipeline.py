@@ -149,6 +149,7 @@ class PreloadedVloaders:
         self.ar1_H3_6_9.num_lf = num_lf
         self.ar1_H3_6_9.num_hf = num_hf
 
+        # Vary redshifts
         res_l = 128
         res_h = 512
         box_l = 256
@@ -166,14 +167,14 @@ class PreloadedVloaders:
             num_lowres_list=[num_lf for _ in z],
             num_highres=num_hf,
         )
-        vloader.res_l = res_l
-        vloader.res_h = res_h
-        vloader.box_l = box_l
-        vloader.box_h = box_h
-        vloader.z     = z 
-        vloader.slice = slice
-        vloader.num_lf = num_lf
-        vloader.num_hf = num_hf
+        self.ar1_L60_H3_z0_1_2.res_l = res_l
+        self.ar1_L60_H3_z0_1_2.res_h = res_h
+        self.ar1_L60_H3_z0_1_2.box_l = box_l
+        self.ar1_L60_H3_z0_1_2.box_h = box_h
+        self.ar1_L60_H3_z0_1_2.z     = z 
+        self.ar1_L60_H3_z0_1_2.slice = slice
+        self.ar1_L60_H3_z0_1_2.num_lf = num_lf
+        self.ar1_L60_H3_z0_1_2.num_hf = num_hf
 
         # change back to original dir
         os.chdir(old_dir)
