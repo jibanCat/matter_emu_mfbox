@@ -1,4 +1,6 @@
+from curses import KEY_BEG
 import os
+from typing import Optional
 import numpy as np
 
 from matplotlib import pyplot as plt
@@ -121,5 +123,158 @@ class PreloadedVloaders:
         self.nargp_H3_slice19.num_lf = num_lf
         self.nargp_H3_slice19.num_hf = num_hf
 
+
+        # 3HR-6HR-9HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [[57, 58, 59], [0, 1, 2, 57, 58, 59], [0, 1, 2, 3, 4, 5, 57, 58, 59]]
+        num_lf = [60, 60, 60]
+        num_hf = [3, 6, 9]
+        self.ar1_H3_6_9 = ValidationLoader(
+            [
+                ar1_folder_name(n_lf, res_l, box_l, n_hf, res_h, box_h, z, ss) for n_lf, n_hf, ss in zip(num_lf, num_hf, slice)
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.ar1_H3_6_9.res_l = res_l
+        self.ar1_H3_6_9.res_h = res_h
+        self.ar1_H3_6_9.box_l = box_l
+        self.ar1_H3_6_9.box_h = box_h
+        self.ar1_H3_6_9.z     = z 
+        self.ar1_H3_6_9.slice = slice
+        self.ar1_H3_6_9.num_lf = num_lf
+        self.ar1_H3_6_9.num_hf = num_hf
+
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = [0, 0.2, 0.5, 1.0, 2.0, 3.0]
+        slice = [57, 58, 59]
+        num_lf = 60
+        num_hf = 3
+        
+        # list of emulators in different redshifts
+        self.ar1_L60_H3_z0_1_2 = ValidationLoader(
+            [
+                ar1_folder_name(num_lf, res_l, box_l, num_hf, res_h, box_h, zz, slice) for zz in z
+            ],
+            num_lowres_list=[num_lf for _ in z],
+            num_highres=num_hf,
+        )
+        vloader.res_l = res_l
+        vloader.res_h = res_h
+        vloader.box_l = box_l
+        vloader.box_h = box_h
+        vloader.z     = z 
+        vloader.slice = slice
+        vloader.num_lf = num_lf
+        vloader.num_hf = num_hf
+
         # change back to original dir
         os.chdir(old_dir)
+
+def get_mean_std(vloader: ValidationLoader, ):
+    """
+    A modification from Martin's plotting script
+    """
+    absmean = np.mean(vloader.relative_errors, axis=2)
+    absstd  = np.std( vloader.relative_errors, axis=2)
+
+    absmeanHF = np.mean(vloader.relative_errors_hf, axis=2)
+    absstdHF  = np.std( vloader.relative_errors_hf, axis=2)
+
+    return absmean, absstd, absmeanHF, absstdHF
+
+# get error for a specific emulator (averaged over z or k)
+def get_mean_std_one(vloader: ValidationLoader, lf: Optional[int], hf: Optional[int], z_or_k: str = 'k', nargp: bool = False):
+    """
+    Modification from Martin's function
+
+    Parameters:
+    ----
+    lf : number of LF points
+    HF : number of HF points
+    z_or_k : errors as function of z or k, i.e., average over k or z
+    nargp : use nargp results or ar1 results
+    """
+    axis_z = 0
+    axis_test_cases = 1
+    axis_k = 2
+
+    if not nargp:
+        folder_fn = ar1_folder_name
+    elif nargp:
+        folder_fn = nargp_folder_name
+
+    # TODO: fix these for now
+    res_l = 128
+    res_h = 512
+    box_l = 256
+    box_h = 256
+    z = [0, 0.2, 0.5, 1.0, 2.0, 3.0]
+    slice = [57, 58, 59]
+    num_lf = lf
+    num_hf = hf
+    
+    # list of emulators in different redshifts
+    vloader = ValidationLoader(
+        [
+            folder_fn(num_lf, res_l, box_l, num_hf, res_h, box_h, zz, slice) for zz in z
+        ],
+        num_lowres_list=[num_lf for _ in z],
+        num_highres=num_hf,
+    )
+    vloader.res_l = res_l
+    vloader.res_h = res_h
+    vloader.box_l = box_l
+    vloader.box_h = box_h
+    vloader.z     = z 
+    vloader.slice = slice
+    vloader.num_lf = num_lf
+    vloader.num_hf = num_hf
+
+    # average over k
+    # pred_div_exact: Shape (number of emulators (redshifts in this case), number of test simulations, number of k bins)
+    if z_or_k == 'z':
+        absmean = np.full(absmean.shape[axis_z], fill_value=np.nan)
+        absstd  = np.full(absmean.shape[axis_z], fill_value=np.nan)
+        for i in enumerate(absmean):
+            absmean[i] = np.mean(np.abs(vloader.pred_div_exact - 1)[i, :, :])
+            absstd[i]  = np.std( np.abs(vloader.pred_div_exact - 1)[i, :, :])
+
+    elif z_or_k == 'k':
+        absmean = np.full(absmean.shape[axis_k], fill_value=np.nan)
+        absstd  = np.full(absmean.shape[axis_k], fill_value=np.nan)
+        for i in enumerate(absmean):
+            absmean[i] = np.mean(np.abs(vloader.pred_div_exact - 1)[:, :, i])
+            absstd[i]  = np.std( np.abs(vloader.pred_div_exact - 1)[:, :, i])
+
+    return absmean, absstd
+
+from matter_multi_fidelity_emu.data_loader_dgmgp import interpolate
+
+def interp_lf_trim_hf(k_lf: np.ndarray, k_hf: np.ndarray, Y_lf: np.ndarray, Y_hf: np.ndarray):
+    # Interpolate the LF,
+    # and limit the HF kmax to the maximum of LF
+    # Min k bins LF <= k bins HF <= Max k bins LF
+    ind_min = (np.log10(k_lf).min() <= np.log10(k_hf)) & (
+        np.log10(k_hf) <= np.log10(k_lf).max()
+    )
+
+    # interpolate: interp(log10_k, Y_lf)(log10_k[ind_min])
+    # I do want to interpolate in loglog scale.
+    # TODO: Think about if our smooth prior is on linear or log scale?
+    Y_lf_new = interpolate(
+        np.log10(k_lf), np.log10(Y_lf), np.log10(k_hf)[ind_min]
+    )
+    Y_lf = 10**Y_lf_new
+    Y_hf = Y_hf[:, ind_min]
+    k_hf = k_hf[ind_min]
+    k_lf = k_hf
+
+    return k_lf, k_hf, Y_lf, Y_hf, ind_min
