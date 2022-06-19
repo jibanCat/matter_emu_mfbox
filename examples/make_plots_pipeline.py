@@ -4,10 +4,11 @@ from typing import Optional
 import numpy as np
 
 from matplotlib import pyplot as plt
+from regex import D
 
 from matter_multi_fidelity_emu.plottings.validation_loader import ValidationLoader
 from matter_multi_fidelity_emu.data_loader import folder_name
-from .make_validations_dgmgp import folder_name as dgmgp_folder_name
+from .make_validations_dgmgp import folder_name as dgmgp_folder
 
 # folder_name
 # e.g., Matterpower_24_res128box256_3_res512box256_z3_ind-57-58-59
@@ -62,6 +63,41 @@ def nargp_folder_name(
     ), "NARGP")
 
 
+def dgmgp_folder_name(
+    num1: int,
+    res1: int,
+    box1: int,
+
+    num2: int,
+    res2: int,
+    box2: int,
+
+    num3: int,
+    res3: int,
+    box3: int,
+    z: float,
+    selected_ind,
+):
+    return os.path.join(dgmgp_folder(
+        num1,
+        res1,
+        box1,
+
+        num2,
+        res2,
+        box2,
+
+        num3,
+        res3,
+        box3,
+        z,
+        selected_ind
+        ),
+        "dGMGP",
+)
+
+
+
 
 class PreloadedVloaders:
     """
@@ -72,7 +108,7 @@ class PreloadedVloaders:
         old_dir = os.getcwd()
         os.chdir(img_dir)
 
-        # 3HR
+        # AR1: vary LF
         res_l = 128
         res_h = 512
         box_l = 256
@@ -98,14 +134,42 @@ class PreloadedVloaders:
         self.ar1_H3_slice19.num_hf = num_hf
 
 
-        # 3HR
+        # dGMGP: vary LF
+        res_l = 128
+        res_h = 512
+        box_l_1 = 256
+        box_l_2 = 100
+        box_h = 256
+        z = 0
+        slice = [57, 58, 59]
+        num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 3
+        self.dgmgp_H3_slice19 = ValidationLoader(
+            [
+                dgmgp_folder_name(n_lf, res_l, box_l_1, n_lf, res_l, box_l_2, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+            dGMGP=True,
+        )
+        self.dgmgp_H3_slice19.res_l = res_l
+        self.dgmgp_H3_slice19.res_h = res_h
+        self.dgmgp_H3_slice19.box_l = box_l
+        self.dgmgp_H3_slice19.box_l_2 = box_l_2
+        self.dgmgp_H3_slice19.box_h = box_h
+        self.dgmgp_H3_slice19.z     = z 
+        self.dgmgp_H3_slice19.slice = slice
+        self.dgmgp_H3_slice19.num_lf = num_lf
+        self.dgmgp_H3_slice19.num_hf = num_hf
+
+        # dGMGP: vary LF
         res_l = 128
         res_h = 512
         box_l = 256
         box_h = 256
         z = 0
         slice = [57, 58, 59]
-        num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        num_lf = [18, 24, 30, 36, 42, 48, 54, 60] # assume L1 and L2 have the same L points
         num_hf = 3
         self.nargp_H3_slice19 = ValidationLoader(
             [
@@ -149,32 +213,86 @@ class PreloadedVloaders:
         self.ar1_H3_6_9.num_lf = num_lf
         self.ar1_H3_6_9.num_hf = num_hf
 
-        # Vary redshifts
+        # AR1: Vary redshifts
         res_l = 128
         res_h = 512
         box_l = 256
         box_h = 256
-        z = [0, 0.2, 0.5, 1.0, 2.0, 3.0]
+        # z = [0, 0.2, 0.5, 1.0, 2.0, 3.0] # Forgot to run z=0.5
+        z = [0, 0.2, 1.0, 2.0, 3.0]
         slice = [57, 58, 59]
         num_lf = 60
         num_hf = 3
-        
-        # list of emulators in different redshifts
-        self.ar1_L60_H3_z0_1_2 = ValidationLoader(
+        self.ar1_L60_H3_z0_1_2_slice_19 = ValidationLoader(
             [
                 ar1_folder_name(num_lf, res_l, box_l, num_hf, res_h, box_h, zz, slice) for zz in z
             ],
             num_lowres_list=[num_lf for _ in z],
             num_highres=num_hf,
         )
-        self.ar1_L60_H3_z0_1_2.res_l = res_l
-        self.ar1_L60_H3_z0_1_2.res_h = res_h
-        self.ar1_L60_H3_z0_1_2.box_l = box_l
-        self.ar1_L60_H3_z0_1_2.box_h = box_h
-        self.ar1_L60_H3_z0_1_2.z     = z 
-        self.ar1_L60_H3_z0_1_2.slice = slice
-        self.ar1_L60_H3_z0_1_2.num_lf = num_lf
-        self.ar1_L60_H3_z0_1_2.num_hf = num_hf
+        self.ar1_L60_H3_z0_1_2_slice_19.res_l = res_l
+        self.ar1_L60_H3_z0_1_2_slice_19.res_h = res_h
+        self.ar1_L60_H3_z0_1_2_slice_19.box_l = box_l
+        self.ar1_L60_H3_z0_1_2_slice_19.box_h = box_h
+        self.ar1_L60_H3_z0_1_2_slice_19.z     = z 
+        self.ar1_L60_H3_z0_1_2_slice_19.slice = slice
+        self.ar1_L60_H3_z0_1_2_slice_19.num_lf = num_lf
+        self.ar1_L60_H3_z0_1_2_slice_19.num_hf = num_hf
+
+        # NARGP: Vary redshifts
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        # z = [0, 0.2, 0.5, 1.0, 2.0, 3.0] # Forgot to run z=0.5
+        z = [0, 0.2, 1.0, 2.0, 3.0]
+        slice = [57, 58, 59]
+        num_lf = 60
+        num_hf = 3
+        self.nargp_L60_H3_z0_1_2_slice_19 = ValidationLoader(
+            [
+                nargp_folder_name(num_lf, res_l, box_l, num_hf, res_h, box_h, zz, slice) for zz in z
+            ],
+            num_lowres_list=[num_lf for _ in z],
+            num_highres=num_hf,
+        )
+        self.nargp_L60_H3_z0_1_2_slice_19.res_l = res_l
+        self.nargp_L60_H3_z0_1_2_slice_19.res_h = res_h
+        self.nargp_L60_H3_z0_1_2_slice_19.box_l = box_l
+        self.nargp_L60_H3_z0_1_2_slice_19.box_h = box_h
+        self.nargp_L60_H3_z0_1_2_slice_19.z     = z 
+        self.nargp_L60_H3_z0_1_2_slice_19.slice = slice
+        self.nargp_L60_H3_z0_1_2_slice_19.num_lf = num_lf
+        self.nargp_L60_H3_z0_1_2_slice_19.num_hf = num_hf
+
+        # dGMGP: Vary redshifts
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_l_2 = 100
+        box_h = 256
+        # z = [0, 0.2, 0.5, 1.0, 2.0, 3.0] # Forgot to run z=0.5
+        z = [0, 0.2, 1.0, 2.0, 3.0]
+        slice = [57, 58, 59]
+        num_lf = 60
+        num_hf = 3
+        self.dgmgp_L60_H3_z0_1_2_slice_19 = ValidationLoader(
+            [
+                dgmgp_folder_name(num_lf, res_l, box_l, num_lf, res_l, box_l_2, num_hf, res_h, box_h, zz, slice) for zz in z
+            ],
+            num_lowres_list=[num_lf for _ in z],
+            num_highres=num_hf,
+            dGMGP=True,
+        )
+        self.dgmgp_L60_H3_z0_1_2_slice_19.res_l = res_l
+        self.dgmgp_L60_H3_z0_1_2_slice_19.res_h = res_h
+        self.dgmgp_L60_H3_z0_1_2_slice_19.box_l = box_l
+        self.dgmgp_L60_H3_z0_1_2_slice_19.box_h = box_h
+        self.dgmgp_L60_H3_z0_1_2_slice_19.z     = z 
+        self.dgmgp_L60_H3_z0_1_2_slice_19.slice = slice
+        self.dgmgp_L60_H3_z0_1_2_slice_19.num_lf = num_lf
+        self.dgmgp_L60_H3_z0_1_2_slice_19.num_hf = num_hf
+
 
         # change back to original dir
         os.chdir(old_dir)
@@ -192,7 +310,7 @@ def get_mean_std(vloader: ValidationLoader, ):
     return absmean, absstd, absmeanHF, absstdHF
 
 # get error for a specific emulator (averaged over z or k)
-def get_mean_std_one(vloader: ValidationLoader, lf: Optional[int], hf: Optional[int], z_or_k: str = 'k', nargp: bool = False):
+def get_mean_std_one(lf: Optional[int], hf: Optional[int], z_or_k: str = 'k', nargp: bool = False):
     """
     Modification from Martin's function
 
@@ -255,7 +373,7 @@ def get_mean_std_one(vloader: ValidationLoader, lf: Optional[int], hf: Optional[
             absmean[i] = np.mean(np.abs(vloader.pred_div_exact - 1)[:, :, i])
             absstd[i]  = np.std( np.abs(vloader.pred_div_exact - 1)[:, :, i])
 
-    return absmean, absstd
+    return vloader, absmean, absstd
 
 from matter_multi_fidelity_emu.data_loader_dgmgp import interpolate
 
@@ -279,3 +397,4 @@ def interp_lf_trim_hf(k_lf: np.ndarray, k_hf: np.ndarray, Y_lf: np.ndarray, Y_hf
     k_lf = k_hf
 
     return k_lf, k_hf, Y_lf, Y_hf, ind_min
+
