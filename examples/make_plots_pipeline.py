@@ -115,7 +115,7 @@ class PreloadedVloaders:
         box_h = 256
         z = 0
         slice = [57, 58, 59]
-        num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         num_hf = 3
         self.ar1_H3_slice19 = ValidationLoader(
             [
@@ -142,7 +142,7 @@ class PreloadedVloaders:
         box_h = 256
         z = 0
         slice = [57, 58, 59]
-        num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         num_hf = 3
         self.dgmgp_H3_slice19 = ValidationLoader(
             [
@@ -169,7 +169,7 @@ class PreloadedVloaders:
         box_h = 256
         z = 0
         slice = [57, 58, 59]
-        num_lf = [18, 24, 30, 36, 42, 48, 54, 60] # assume L1 and L2 have the same L points
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60] # assume L1 and L2 have the same L points
         num_hf = 3
         self.nargp_H3_slice19 = ValidationLoader(
             [
@@ -691,6 +691,31 @@ class PreloadedVloaders:
         ## Start Here
         ## -----
 
+        # AR1: 2 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [57, 58]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 2
+        self.ar1_H2_slice19 = ValidationLoader(
+            [
+                ar1_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.ar1_H2_slice19.res_l = res_l
+        self.ar1_H2_slice19.res_h = res_h
+        self.ar1_H2_slice19.box_l = box_l
+        self.ar1_H2_slice19.box_h = box_h
+        self.ar1_H2_slice19.z     = z 
+        self.ar1_H2_slice19.slice = slice
+        self.ar1_H2_slice19.num_lf = num_lf
+        self.ar1_H2_slice19.num_hf = num_hf
+
         # AR1: 4 HR
         res_l = 128
         res_h = 512
@@ -698,7 +723,7 @@ class PreloadedVloaders:
         box_h = 256
         z = 0
         slice = [0, 57, 58, 59]
-        num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         num_hf = 4
         self.ar1_H4_slice19 = ValidationLoader(
             [
@@ -723,7 +748,7 @@ class PreloadedVloaders:
         box_h = 256
         z = 0
         slice = [0, 1, 57, 58, 59]
-        num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         num_hf = 5
         self.ar1_H5_slice19 = ValidationLoader(
             [
@@ -748,7 +773,7 @@ class PreloadedVloaders:
         box_h = 256
         z = 0
         slice = [0, 1, 2, 57, 58, 59]
-        num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         num_hf = 6
         self.ar1_H6_slice19 = ValidationLoader(
             [
@@ -773,7 +798,7 @@ class PreloadedVloaders:
         box_h = 256
         z = 0
         slice = [0, 1, 2, 3, 57, 58, 59]
-        num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         num_hf = 7
         self.ar1_H7_slice19 = ValidationLoader(
             [
@@ -798,7 +823,7 @@ class PreloadedVloaders:
         box_h = 256
         z = 0
         slice = [0, 1, 2, 3, 4, 57, 58, 59]
-        num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         num_hf = 8
         self.ar1_H8_slice19 = ValidationLoader(
             [
@@ -824,7 +849,7 @@ class PreloadedVloaders:
         box_h = 256
         z = 0
         slice = [0, 1, 2, 3, 4, 5, 57, 58, 59]
-        num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         num_hf = 9
         self.ar1_H9_slice19 = ValidationLoader(
             [
@@ -849,7 +874,7 @@ class PreloadedVloaders:
         # box_h = 256
         # z = 0
         # slice = [0, 1, 2, 3, 4, 5, 6, 57, 58, 59]
-        # num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        # num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         # num_hf = 10
         # self.ar1_H10_slice19 = ValidationLoader(
         #     [
@@ -874,7 +899,7 @@ class PreloadedVloaders:
         # box_h = 256
         # z = 0
         # slice = [0, 1, 2, 3, 4, 5, 6, 7, 57, 58, 59]
-        # num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        # num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         # num_hf = 11
         # self.ar1_H11_slice19 = ValidationLoader(
         #     [
@@ -899,7 +924,7 @@ class PreloadedVloaders:
         # box_h = 256
         # z = 0
         # slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 57, 58, 59]
-        # num_lf = [18, 24, 30, 36, 42, 48, 54, 60]
+        # num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
         # num_hf = 12
         # self.ar1_H12_slice19 = ValidationLoader(
         #     [
@@ -916,6 +941,159 @@ class PreloadedVloaders:
         # self.ar1_H12_slice19.slice = slice
         # self.ar1_H12_slice19.num_lf = num_lf
         # self.ar1_H12_slice19.num_hf = num_hf
+
+        # AR1: 13 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 13
+        self.ar1_H13_slice19 = ValidationLoader(
+            [
+                ar1_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.ar1_H13_slice19.res_l = res_l
+        self.ar1_H13_slice19.res_h = res_h
+        self.ar1_H13_slice19.box_l = box_l
+        self.ar1_H13_slice19.box_h = box_h
+        self.ar1_H13_slice19.z     = z 
+        self.ar1_H13_slice19.slice = slice
+        self.ar1_H13_slice19.num_lf = num_lf
+        self.ar1_H13_slice19.num_hf = num_hf
+
+        # # AR1: 14 HR
+        # res_l = 128
+        # res_h = 512
+        # box_l = 256
+        # box_h = 256
+        # z = 0
+        # slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 57, 58, 59]
+        # num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        # num_hf = 14
+        # self.ar1_H14_slice19 = ValidationLoader(
+        #     [
+        #         ar1_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+        #     ],
+        #     num_lowres_list=num_lf,
+        #     num_highres=num_hf,
+        # )
+        # self.ar1_H14_slice19.res_l = res_l
+        # self.ar1_H14_slice19.res_h = res_h
+        # self.ar1_H14_slice19.box_l = box_l
+        # self.ar1_H14_slice19.box_h = box_h
+        # self.ar1_H14_slice19.z     = z 
+        # self.ar1_H14_slice19.slice = slice
+        # self.ar1_H14_slice19.num_lf = num_lf
+        # self.ar1_H14_slice19.num_hf = num_hf
+
+
+        # # AR1: 15 HR
+        # res_l = 128
+        # res_h = 512
+        # box_l = 256
+        # box_h = 256
+        # z = 0
+        # slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 57, 58, 59]
+        # num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        # num_hf = 15
+        # self.ar1_H15_slice19 = ValidationLoader(
+        #     [
+        #         ar1_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+        #     ],
+        #     num_lowres_list=num_lf,
+        #     num_highres=num_hf,
+        # )
+        # self.ar1_H15_slice19.res_l = res_l
+        # self.ar1_H15_slice19.res_h = res_h
+        # self.ar1_H15_slice19.box_l = box_l
+        # self.ar1_H15_slice19.box_h = box_h
+        # self.ar1_H15_slice19.z     = z 
+        # self.ar1_H15_slice19.slice = slice
+        # self.ar1_H15_slice19.num_lf = num_lf
+        # self.ar1_H15_slice19.num_hf = num_hf
+
+
+        # AR1: 16 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 16
+        self.ar1_H16_slice19 = ValidationLoader(
+            [
+                ar1_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.ar1_H16_slice19.res_l = res_l
+        self.ar1_H16_slice19.res_h = res_h
+        self.ar1_H16_slice19.box_l = box_l
+        self.ar1_H16_slice19.box_h = box_h
+        self.ar1_H16_slice19.z     = z 
+        self.ar1_H16_slice19.slice = slice
+        self.ar1_H16_slice19.num_lf = num_lf
+        self.ar1_H16_slice19.num_hf = num_hf
+
+        # AR1: 17 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 17
+        self.ar1_H17_slice19 = ValidationLoader(
+            [
+                ar1_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.ar1_H17_slice19.res_l = res_l
+        self.ar1_H17_slice19.res_h = res_h
+        self.ar1_H17_slice19.box_l = box_l
+        self.ar1_H17_slice19.box_h = box_h
+        self.ar1_H17_slice19.z     = z 
+        self.ar1_H17_slice19.slice = slice
+        self.ar1_H17_slice19.num_lf = num_lf
+        self.ar1_H17_slice19.num_hf = num_hf
+
+        # AR1: 18 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 18
+        self.ar1_H18_slice19 = ValidationLoader(
+            [
+                ar1_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.ar1_H18_slice19.res_l = res_l
+        self.ar1_H18_slice19.res_h = res_h
+        self.ar1_H18_slice19.box_l = box_l
+        self.ar1_H18_slice19.box_h = box_h
+        self.ar1_H18_slice19.z     = z 
+        self.ar1_H18_slice19.slice = slice
+        self.ar1_H18_slice19.num_lf = num_lf
+        self.ar1_H18_slice19.num_hf = num_hf
+
 
         # change back to original dir
         os.chdir(old_dir)
