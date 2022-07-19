@@ -1094,6 +1094,37 @@ class PreloadedVloaders:
         self.ar1_H18_slice19.num_lf = num_lf
         self.ar1_H18_slice19.num_hf = num_hf
 
+        ############################ Various other Boxsizes ############################
+        # Box 224
+        # dGMGP: Vary redshifts
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_l_2 = 224
+        box_h = 256
+        # z = [0, 0.2, 0.5, 1.0, 2.0, 3.0] # Forgot to run z=0.5
+        z = [0, 0.2, 1.0, 2.0, 3.0]
+        slice = [57, 58, 59]
+        num_lf = 60
+        num_hf = 3
+        self.dgmgp_L60_H3_z0_1_2_slice_19 = ValidationLoader(
+            [
+                dgmgp_folder_name(num_lf, res_l, box_l, num_lf, res_l, box_l_2, num_hf, res_h, box_h, zz, slice) for zz in z
+            ],
+            num_lowres_list=[num_lf for _ in z],
+            num_highres=num_hf,
+            dGMGP=True,
+        )
+        self.dgmgp_L60_H3_z0_1_2_slice_19.res_l = res_l
+        self.dgmgp_L60_H3_z0_1_2_slice_19.res_h = res_h
+        self.dgmgp_L60_H3_z0_1_2_slice_19.box_l = box_l
+        self.dgmgp_L60_H3_z0_1_2_slice_19.box_h = box_h
+        self.dgmgp_L60_H3_z0_1_2_slice_19.z     = z 
+        self.dgmgp_L60_H3_z0_1_2_slice_19.slice = slice
+        self.dgmgp_L60_H3_z0_1_2_slice_19.num_lf = num_lf
+        self.dgmgp_L60_H3_z0_1_2_slice_19.num_hf = num_hf
+
+
 
         # change back to original dir
         os.chdir(old_dir)
