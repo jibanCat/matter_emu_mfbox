@@ -1,11 +1,10 @@
 import os, json
-from socket import SIO_KEEPALIVE_VALS
 import numpy as np
 
 
 import h5py
 
-class DictHoler(dict):
+class DictHolder(dict):
 
     def __init__(self, new_dict: dict, saved_filename: str = "emulator_params.json"):
 
@@ -43,14 +42,14 @@ class DictHoler(dict):
             for param in parameter_names:
                 val = self[param] + other[param]
                 assert len(val) == (self_size + other_size)
-                new_dict["param"] = val
+                new_dict[param] = val
 
             new_dict["box"] = self["box"]
             new_dict["npart"] = self["npart"]
 
-            json.dump(new_dict, self.saved_filename)
+            json.dump(new_dict, f)
 
-        return DictHoler(new_dict, saved_filename=self.saved_filename)
+        return DictHolder(new_dict, saved_filename=self.saved_filename)
 
 class HDF5Holder(h5py.File):
     """
