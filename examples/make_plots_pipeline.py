@@ -1094,6 +1094,414 @@ class PreloadedVloaders:
         self.ar1_H18_slice19.num_lf = num_lf
         self.ar1_H18_slice19.num_hf = num_hf
 
+        ## Vary NARGP's HR points
+        ## Start Here
+        ## -----
+
+        # NARGP: 2 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [57, 58]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 2
+        self.nargp_H2_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H2_slice19.res_l = res_l
+        self.nargp_H2_slice19.res_h = res_h
+        self.nargp_H2_slice19.box_l = box_l
+        self.nargp_H2_slice19.box_h = box_h
+        self.nargp_H2_slice19.z     = z 
+        self.nargp_H2_slice19.slice = slice
+        self.nargp_H2_slice19.num_lf = num_lf
+        self.nargp_H2_slice19.num_hf = num_hf
+
+        # NARGP: 4 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 4
+        self.nargp_H4_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H4_slice19.res_l = res_l
+        self.nargp_H4_slice19.res_h = res_h
+        self.nargp_H4_slice19.box_l = box_l
+        self.nargp_H4_slice19.box_h = box_h
+        self.nargp_H4_slice19.z     = z 
+        self.nargp_H4_slice19.slice = slice
+        self.nargp_H4_slice19.num_lf = num_lf
+        self.nargp_H4_slice19.num_hf = num_hf
+
+        # NARGP: 5 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 5
+        self.nargp_H5_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H5_slice19.res_l = res_l
+        self.nargp_H5_slice19.res_h = res_h
+        self.nargp_H5_slice19.box_l = box_l
+        self.nargp_H5_slice19.box_h = box_h
+        self.nargp_H5_slice19.z     = z 
+        self.nargp_H5_slice19.slice = slice
+        self.nargp_H5_slice19.num_lf = num_lf
+        self.nargp_H5_slice19.num_hf = num_hf
+
+        # NARGP: 6 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 6
+        self.nargp_H6_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H6_slice19.res_l = res_l
+        self.nargp_H6_slice19.res_h = res_h
+        self.nargp_H6_slice19.box_l = box_l
+        self.nargp_H6_slice19.box_h = box_h
+        self.nargp_H6_slice19.z     = z 
+        self.nargp_H6_slice19.slice = slice
+        self.nargp_H6_slice19.num_lf = num_lf
+        self.nargp_H6_slice19.num_hf = num_hf
+
+        # NARGP: 7 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 7
+        self.nargp_H7_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H7_slice19.res_l = res_l
+        self.nargp_H7_slice19.res_h = res_h
+        self.nargp_H7_slice19.box_l = box_l
+        self.nargp_H7_slice19.box_h = box_h
+        self.nargp_H7_slice19.z     = z 
+        self.nargp_H7_slice19.slice = slice
+        self.nargp_H7_slice19.num_lf = num_lf
+        self.nargp_H7_slice19.num_hf = num_hf
+
+        # NARGP: 8 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 8
+        self.nargp_H8_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H8_slice19.res_l = res_l
+        self.nargp_H8_slice19.res_h = res_h
+        self.nargp_H8_slice19.box_l = box_l
+        self.nargp_H8_slice19.box_h = box_h
+        self.nargp_H8_slice19.z     = z 
+        self.nargp_H8_slice19.slice = slice
+        self.nargp_H8_slice19.num_lf = num_lf
+        self.nargp_H8_slice19.num_hf = num_hf
+
+
+        # NARGP: 9 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 9
+        self.nargp_H9_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H9_slice19.res_l = res_l
+        self.nargp_H9_slice19.res_h = res_h
+        self.nargp_H9_slice19.box_l = box_l
+        self.nargp_H9_slice19.box_h = box_h
+        self.nargp_H9_slice19.z     = z 
+        self.nargp_H9_slice19.slice = slice
+        self.nargp_H9_slice19.num_lf = num_lf
+        self.nargp_H9_slice19.num_hf = num_hf
+
+        # NARGP: 10 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 10
+        self.nargp_H10_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H10_slice19.res_l = res_l
+        self.nargp_H10_slice19.res_h = res_h
+        self.nargp_H10_slice19.box_l = box_l
+        self.nargp_H10_slice19.box_h = box_h
+        self.nargp_H10_slice19.z     = z 
+        self.nargp_H10_slice19.slice = slice
+        self.nargp_H10_slice19.num_lf = num_lf
+        self.nargp_H10_slice19.num_hf = num_hf
+
+        # NARGP: 11 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 11
+        self.nargp_H11_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H11_slice19.res_l = res_l
+        self.nargp_H11_slice19.res_h = res_h
+        self.nargp_H11_slice19.box_l = box_l
+        self.nargp_H11_slice19.box_h = box_h
+        self.nargp_H11_slice19.z     = z 
+        self.nargp_H11_slice19.slice = slice
+        self.nargp_H11_slice19.num_lf = num_lf
+        self.nargp_H11_slice19.num_hf = num_hf
+
+        # NARGP: 12 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 12
+        self.nargp_H12_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H12_slice19.res_l = res_l
+        self.nargp_H12_slice19.res_h = res_h
+        self.nargp_H12_slice19.box_l = box_l
+        self.nargp_H12_slice19.box_h = box_h
+        self.nargp_H12_slice19.z     = z 
+        self.nargp_H12_slice19.slice = slice
+        self.nargp_H12_slice19.num_lf = num_lf
+        self.nargp_H12_slice19.num_hf = num_hf
+
+        # NARGP: 13 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 13
+        self.nargp_H13_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H13_slice19.res_l = res_l
+        self.nargp_H13_slice19.res_h = res_h
+        self.nargp_H13_slice19.box_l = box_l
+        self.nargp_H13_slice19.box_h = box_h
+        self.nargp_H13_slice19.z     = z 
+        self.nargp_H13_slice19.slice = slice
+        self.nargp_H13_slice19.num_lf = num_lf
+        self.nargp_H13_slice19.num_hf = num_hf
+
+        # NARGP: 14 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 14
+        self.nargp_H14_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H14_slice19.res_l = res_l
+        self.nargp_H14_slice19.res_h = res_h
+        self.nargp_H14_slice19.box_l = box_l
+        self.nargp_H14_slice19.box_h = box_h
+        self.nargp_H14_slice19.z     = z 
+        self.nargp_H14_slice19.slice = slice
+        self.nargp_H14_slice19.num_lf = num_lf
+        self.nargp_H14_slice19.num_hf = num_hf
+
+
+        # NARGP: 15 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 15
+        self.nargp_H15_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H15_slice19.res_l = res_l
+        self.nargp_H15_slice19.res_h = res_h
+        self.nargp_H15_slice19.box_l = box_l
+        self.nargp_H15_slice19.box_h = box_h
+        self.nargp_H15_slice19.z     = z 
+        self.nargp_H15_slice19.slice = slice
+        self.nargp_H15_slice19.num_lf = num_lf
+        self.nargp_H15_slice19.num_hf = num_hf
+
+
+        # NARGP: 16 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 16
+        self.nargp_H16_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H16_slice19.res_l = res_l
+        self.nargp_H16_slice19.res_h = res_h
+        self.nargp_H16_slice19.box_l = box_l
+        self.nargp_H16_slice19.box_h = box_h
+        self.nargp_H16_slice19.z     = z 
+        self.nargp_H16_slice19.slice = slice
+        self.nargp_H16_slice19.num_lf = num_lf
+        self.nargp_H16_slice19.num_hf = num_hf
+
+        # NARGP: 17 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 17
+        self.nargp_H17_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H17_slice19.res_l = res_l
+        self.nargp_H17_slice19.res_h = res_h
+        self.nargp_H17_slice19.box_l = box_l
+        self.nargp_H17_slice19.box_h = box_h
+        self.nargp_H17_slice19.z     = z 
+        self.nargp_H17_slice19.slice = slice
+        self.nargp_H17_slice19.num_lf = num_lf
+        self.nargp_H17_slice19.num_hf = num_hf
+
+        # NARGP: 18 HR
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60]
+        num_hf = 18
+        self.nargp_H18_slice19 = ValidationLoader(
+            [
+                nargp_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.nargp_H18_slice19.res_l = res_l
+        self.nargp_H18_slice19.res_h = res_h
+        self.nargp_H18_slice19.box_l = box_l
+        self.nargp_H18_slice19.box_h = box_h
+        self.nargp_H18_slice19.z     = z 
+        self.nargp_H18_slice19.slice = slice
+        self.nargp_H18_slice19.num_lf = num_lf
+        self.nargp_H18_slice19.num_hf = num_hf
+
+
         ############################ Various other Boxsizes ############################
         # Box 224
         # dGMGP: Vary redshifts
@@ -1123,6 +1531,32 @@ class PreloadedVloaders:
         self.dgmgp_L60_H3_z0_1_2_slice_19.slice = slice
         self.dgmgp_L60_H3_z0_1_2_slice_19.num_lf = num_lf
         self.dgmgp_L60_H3_z0_1_2_slice_19.num_hf = num_hf
+
+
+        # AR1: vary LF - to 360
+        res_l = 128
+        res_h = 512
+        box_l = 256
+        box_h = 256
+        z = 0
+        slice = [57, 58, 59]
+        num_lf = [12, 18, 24, 30, 36, 42, 48, 54, 60, 70, 80, 90, 100, 150, 200, 250, 300, 360]
+        num_hf = 3
+        self.ar1_H3_slice19_added_360 = ValidationLoader(
+            [
+                ar1_folder_name(n_lf, res_l, box_l, num_hf, res_h, box_h, z, slice) for n_lf in num_lf
+            ],
+            num_lowres_list=num_lf,
+            num_highres=num_hf,
+        )
+        self.ar1_H3_slice19_added_360.res_l = res_l
+        self.ar1_H3_slice19_added_360.res_h = res_h
+        self.ar1_H3_slice19_added_360.box_l = box_l
+        self.ar1_H3_slice19_added_360.box_h = box_h
+        self.ar1_H3_slice19_added_360.z     = z 
+        self.ar1_H3_slice19_added_360.slice = slice
+        self.ar1_H3_slice19_added_360.num_lf = num_lf
+        self.ar1_H3_slice19_added_360.num_hf = num_hf
 
 
 
