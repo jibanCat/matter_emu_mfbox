@@ -789,7 +789,7 @@ class PreloadedVloaders:
         ]
         num_lf = [60 for _ in range(len(slice))]
         num_hf = [len(s) for s in slice]
-        self.`dgmgp_L60_H3_10_z0` = ValidationLoader(
+        self.dgmgp_L60_H3_10_z0 = ValidationLoader(
             [
                 dgmgp_folder_name(n_lf, res_l, box_l, n_lf, res_l, box_l_2, n_hf, res_h, box_h, z, ss) for n_lf, n_hf, ss in zip(num_lf, num_hf, slice)
             ],
