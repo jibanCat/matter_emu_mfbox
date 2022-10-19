@@ -1,4 +1,3 @@
-from curses import KEY_BEG
 import os
 from typing import Optional
 import numpy as np
