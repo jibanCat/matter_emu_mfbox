@@ -36,7 +36,7 @@ class BudgetVloaders:
         ## All redshifts and All LR + HR
         z       = [0, 0.2, 0.5, 1.0, 2.0, 3.0]
         all_lfs = [12, 18, 24, 30, 36, 42, 48, 54, 60, ]
-        all_hfs = list(range(2, 19))
+        all_hfs = list(range(3, 19))
 
         available_slices = [57, 58, 59, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
         all_slices       = [
