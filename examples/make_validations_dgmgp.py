@@ -1,22 +1,15 @@
+import json
+import os
 from typing import List
 
-import os
-import json
-
+import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
-import matplotlib
 
-from matter_multi_fidelity_emu.gpemulator_singlebin import (
-    SingleBinGP,
-    SingleBinLinearGP,
-    SingleBinNonLinearGP,
-)
 from matter_multi_fidelity_emu.data_loader import PowerSpecs
-
-from matter_multi_fidelity_emu.gpemulator_singlebin import SingleBindGMGP
-
 from matter_multi_fidelity_emu.data_loader_dgmgp import interpolate
+from matter_multi_fidelity_emu.gpemulator_singlebin import (
+    SingleBindGMGP, SingleBinGP, SingleBinLinearGP, SingleBinNonLinearGP)
 
 # set a random number seed to reproducibility
 np.random.seed(0)
@@ -264,7 +257,7 @@ def validate_mf(data: PowerSpecs, model: SingleBinNonLinearGP, fidelity: int = 1
     # predicted/exact
     pred_exacts = 10 ** mean / 10 ** y_test
 
-    return mean, var, pred_exacts
+    return mean, vars, pred_exacts
 
 
 def validate_sf(data: PowerSpecs, model: SingleBinGP):
