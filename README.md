@@ -16,6 +16,8 @@ Acknowledgement: We thank Dr Simon Mak and Irene Ji from https://arxiv.org/abs/2
 The tutorial notebook in `notebooks/Build 60L1-60L2-3HR Multi-Fidelity Multi-Scale Emulator for Matter Power Spectrum.ipynb`
 provides guidance for how to use the multi-fidelity emulator, MF-Box.
 
+![Alt text](images/gpy_example.png)
+
 ## Example script
 
 First, download data from another repo:
@@ -74,7 +76,11 @@ Email me if there's any issue about versions: mho026-at-ucr.edu
 
 In `notebooks/14_MFBox_tensorflow.ipynb`, I rewrite the GPy implementation of multi-fidelity emulator in Tensorflow Probability.
 The basis is the NARGP model (Non-linear AutoRegressive Gaussian Process).
-You can also find my implementation of NARGP in Tensorflow in https://github.com/jibanCat/nargp_tensorflow.
+You can also find my implementation of NARGP in Tensorflow in https://github.com/jibanCat/nargp_tensorflow, which has more detailed comments than the version I had here.
+Academic life does not give me time to make it user-friendly and make it a module.
+If you have questions on using it, please contact me at anytime (mho026 at ucr.edu).
+
+![Alt text](images/tensorflow_example.png)
 
 The Tensorflow version runs faster but requires some fine-tuning on the hyperparameter prior to get the best emulation accuracy.
 
