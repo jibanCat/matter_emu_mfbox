@@ -13,7 +13,7 @@ Acknowledgement: We thank Dr Simon Mak and Irene Ji from https://arxiv.org/abs/2
 
 ## Example notebook: using GPy
 
-The tutorial notebook in `notebooks/Build 60L1-60L2-3HR Multi-Fidelity Multi-Scale Emulator for Matter Power Spectrum.ipynb`
+The tutorial notebook in [`notebooks/Build 60L1-60L2-3HR Multi-Fidelity Multi-Scale Emulator for Matter Power Spectrum.ipynb`](https://nbviewer.org/github/jibanCat/matter_emu_mfbox/blob/public/notebooks/Build%2060L1-60L2-3HR%20Multi-Fidelity%20Multi-Scale%20Emulator%20for%20Matter%20Power%20Spectrum.ipynb)
 provides guidance for how to use the multi-fidelity emulator, MF-Box.
 
 ![Alt text](images/gpy_example.png)
@@ -74,7 +74,7 @@ Email me if there's any issue about versions: mho026-at-ucr.edu
 
 ## Example notebook: Tensorflow Probability implementation
 
-In `notebooks/14_MFBox_tensorflow.ipynb`, I rewrite the GPy implementation of multi-fidelity emulator in Tensorflow Probability.
+In [`notebooks/14_MFBox_tensorflow.ipynb`](https://nbviewer.org/github/jibanCat/matter_emu_mfbox/blob/public/notebooks/14_MFBox_tensorflow.ipynb), I rewrite the GPy implementation of multi-fidelity emulator in Tensorflow Probability.
 The basis is the NARGP model (Non-linear AutoRegressive Gaussian Process).
 You can also find my implementation of NARGP in Tensorflow in https://github.com/jibanCat/nargp_tensorflow, which has more detailed comments than the version I had here.
 Academic life does not give me time to make it user-friendly and make it a module.
